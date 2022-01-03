@@ -1,0 +1,18 @@
+echo "After cloning the DASH repo from GitHub, we need to copy over the data files, which are too large for GitHub."
+echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+read repo
+
+dest=${repo}
+src=/nethome/marmorri/benchmark
+
+mkdir ${dest}/TPCH/data
+mkdir ${dest}/TPCH/data/1
+cp ${src}/TPCH/data/1/*.tbl ${dest}/TPCH/data/1
+
+mkdir ${dest}/NYTaxi/data
+mkdir ${dest}/NYTaxi/data/1
+cp ${src}/NYTaxi/data/1/*.csv ${dest}/NYTaxi/data/1
+
+mkdir ${dest}/SELECTIVITY/data
+mkdir ${dest}/SELECTIVITY/data/1
+cp ${src}/SELECTIVITY/data/1/*.tbl ${dest}/SELECTIVITY/data/1
