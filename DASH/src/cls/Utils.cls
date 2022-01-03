@@ -5,6 +5,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
+	set saveNS = $znspace
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
 		set:$e(path,*)'=separator path = path_separator
@@ -69,6 +70,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	}
 	write:verbose !
 	kill statement
+	zn saveNS
 	quit sc
 }
 
