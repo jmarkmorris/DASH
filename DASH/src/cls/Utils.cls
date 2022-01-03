@@ -166,14 +166,14 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		//OPEN myfile:("WEAS"):5 // add a time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
 		//USE myfile
 			//for i = 1:1:t {
-			//	write database,",",##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",t(i),",",$zv,!
+			//	write ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",t(i),",",$zv,!
 			//}
 		//CLOSE myfile
 
 
 		if verbose {
 			for i = 1:1:t {
-				write !, database,",",##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",t(i),",",$zv
+				write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",t(i),",",$zv
 			}
 		}
 		
