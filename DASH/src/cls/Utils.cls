@@ -105,7 +105,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
     	}
     
 		// match all Q* files in the directory, regardless of their extension.
-		set resultSet = listdirstatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, "Q*", "Name") 
+		// set resultSet = listdirstatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, "Q*", "Name") 
+		set resultSet = listdirstatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, query, "Name") 
 
 
     	while resultSet.%Next() {
@@ -124,9 +125,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			}
 			
 
-			if ((query '= "all") & (query '= queryid)) {
-				continue
-			}
+			//if ((query '= "all") & (query '= queryid)) {
+				//continue
+			//}
 		
 			// Always do a warmup query. It is not recorded.
 			// No need yet to change RunObjScr.
