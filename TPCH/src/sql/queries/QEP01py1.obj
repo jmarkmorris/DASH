@@ -1,0 +1,21 @@
+Class DASH.Benchmark Extends %Persistent
+{
+
+// Write !,"read rows from TPCH lineitem table"
+ClassMethod micro() As %Status [ Language = python ]
+{
+	import iris
+	import itertools
+	import random
+	stmt = iris.sql.prepare("Select * from lineitem where id = ?")
+	for i in itertools.repeat(None, 50000):
+		j = random.randint(1, 50000)
+		rs = stmt.execute(j)
+		for row in rs:
+			pass
+	return 1
+}
+
+}
+
+

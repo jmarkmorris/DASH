@@ -1,0 +1,7 @@
+
+n=1
+while [ n -le 1000000 ]
+do
+echo "$((RANDOM%100))|$((RANDOM%20))|$((RANDOM%10))|$((RANDOM%5))|$((RANDOM%2))|$n"
+n=$(( n+1 ))
+done

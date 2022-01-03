@@ -1,0 +1,16 @@
+TUNE TABLE ${schema}NATION
+;
+TUNE TABLE ${schema}REGION
+;
+TUNE TABLE ${schema}PART
+;
+TUNE TABLE ${schema}SUPPLIER
+;
+TUNE TABLE ${schema}PARTSUPP
+;
+TUNE TABLE ${schema}CUSTOMER
+;
+TUNE TABLE ${schema}ORDERS
+;
+TUNE TABLE ${schema}LINEITEM
+;

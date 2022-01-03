@@ -1,0 +1,18 @@
+Class DASH.Benchmark Extends %Persistent
+{
+
+// Write !,"read rows from TPCH lineitem table"
+ClassMethod micro() As %Status [ Language = objectscript ]
+{
+	set tStatement = ##class(%SQL.Statement).%New()
+	set qStatus = tStatement.%Prepare("Select * from lineitem where id=?") 
+	for i = 1:1:50000 {
+		set j = $random(50000) + 1
+		set rset = tStatement.%Execute(j)
+	}
+
+	return 1
+}
+
+}
+

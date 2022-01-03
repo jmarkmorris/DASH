@@ -1,0 +1,2 @@
+SELECT SUM(O_TOTALPRICE) FROM ${parasetting} ORDERS
+;

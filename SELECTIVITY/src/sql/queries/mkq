@@ -1,0 +1,11 @@
+for i in "1" "5" "10" "20" 
+do
+for j in "1" "5" "10" "20" 
+do
+for k in "1" "5" "10" "20" 
+do
+echo "select AVG(C.RowNUM) FROM \${parasetting} C JOIN D ON C.sel${i} = 0 AND D.sel${j} = 0 AND C.sel${k} = D.sel${k}" > Q-$i-$j-$k.sql
+echo ";" >> Q-$i-$j-$k.sql
+done
+done
+done
