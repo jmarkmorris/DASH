@@ -1,0 +1,359 @@
+PS3="Enter your choice : "
+
+select topic in quit cololist install tpch tpchq NYTaxi micro selectivity SQL monlbl PBscale sharding rtpc shd
+do
+	echo "These processes are used frequently on the colobench servers. They may not work on laptops."
+	echo "Frequently used :"
+        echo "Do \$SYSTEM.SQL.Shell()"
+	echo "set selectmode odbc"
+	echo "set dialect iris"
+	echo "---------------------------"
+	case $topic in
+	    alerts)
+		/nethome/marmorri/bin/markoalert.sh
+	      ;;
+	    cololist)
+		/nethome/marmorri/bin/mylist_pbcluster.sh
+	      ;;
+	    shd)
+		/nethome/marmorri/bin/myshd
+	      ;;
+	    rtpc)
+		cat /nethome/marmorri/bin/.cheatrtpc
+	      ;;
+	    PBscale)
+		cat /nethome/marmorri/bin/.cheatpb
+	      ;;
+	    install)
+		echo ""
+		echo "select build series"
+		
+		select buildstream in quit 2019.1.2 2020.1.0 2021.1.0 2021.2.0 2021.3.0SQL 2022.2.0VEC 2022.2.0SQL 2022.2.0L
+		do
+			case $buildstream in
+			2019.1.2)
+				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
+				;;
+			2020.1.0)
+				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
+				;;
+			2021.1.0)
+				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
+				;;
+			2021.2.0)
+				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+				;;
+			2022.2.0VEC)
+				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+				;;
+			2021.3.0SQL)
+				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+				;;
+			2022.2.0SQL)
+				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+				;;
+			2022.2.0L)
+				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+				;;
+			quit)
+				break
+				;;
+			esac
+			echo "builddir = ${BUILDDIR}"
+			echo "select build number"
+			select build in quit `ls ${BUILDDIR} | egrep 20`
+			do
+				case $build in
+				quit)
+					break
+					;;
+
+				*)
+					echo "build = ${build}"
+					IRISSRCDIR="${BUILDDIR}/${build}/kits/unix/${build}"
+					echo "irissrcdir = ${IRISSRCDIR}"
+					kitstatus=`curl https://turbo.iscinternal.com/prodlog/releng/api/kits/${build} 2>/dev/null | sed -e "s/^.*kitstatus/kitstatus/" | sed -e "s/,\"name.*//"`
+					echo ${kitstatus}
+					echo "Enter instance name : (type return to choose again)"
+					read IRISINSTNAME
+					if [ -z ${IRISINSTNAME} ]
+					then
+						continue
+					fi
+					echo "Issuing an iris stop ${IRISINSTNAME}. Ignore error if it does not exist"
+					sudo iris stop ${IRISINSTNAME} quietly
+					IRISBASELOC="/data"
+					IRISKEYLOC="/nethome/marmorri/iriskeys/iris.key"
+					IRISUSERNAME="_SYSTEM"
+					IRISPASSWORD="SYS"
+					IRISGROUP="sys"
+					CURRDIR="$PWD"
+					IRISINSTUPPER=$(echo ${IRISINSTNAME} | tr '[:lower:]' '[:upper:]')
+					IRISINSTLOWER=$(echo ${IRISINSTNAME} | tr '[:upper:]' '[:lower:]')
+					mkdir -p ${IRISBASELOC}
+					IRISINSTLOC=""${IRISBASELOC}/${IRISINSTLOWER}/sys""
+					cd ${IRISSRCDIR}
+					sudo ISC_PACKAGE_PLATFORM=`./cplatname identify` ISC_PACKAGE_INITIAL_SECURITY="Minimal" ISC_PACKAGE_UNICODE=Y ISC_PACKAGE_CACHEUSER=irisusr ISC_PACKAGE_CACHEGROUP=irisusr ISC_PACKAGE_INSTALLDIR=${IRISINSTLOC} ISC_PACKAGE_INSTANCENAME=${IRISINSTUPPER} ISC_PACKAGE_MGRGROUP=${IRISGROUP} ISC_PACKAGE_MGRUSER=${IRISUSERNAME} ISC_PACKAGE_USER_PASSWORD=${IRISPASSWORD} ISC_PACKAGE_STARTCACHE=N ./irisinstall_silent
+					wait
+					sudo cp ${IRISKEYLOC} "${IRISINSTLOC}/mgr/iris.key"
+					sudo iris stop ${IRISINSTUPPER} restart quietly
+					wait
+					echo "Upgrading license..."
+					( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(%SYSTEM.License).Upgrade()' | sed -e "/Username:/d" -e "/Password:/d"
+					echo "Loading utility class..."
+					( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(%SYSTEM.OBJ).Load("/nethome/cgardner/isc-stuff/classes/buildICM.xml","c")'
+					echo "Activating basic services..."
+					( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(Builder.Utils).SetBasicServices(20)' | sed -e "/Username:/d" -e "/Password:/d"
+					sudo iris stop ${IRISINSTUPPER} restart quietly
+					cd ${CURRDIR}
+					iris list ${IRISINSTUPPER}
+					echo ""
+					echo "IRIS install complete."
+					echo "Issue the following commands to tune IRIS configurations, i.e., memory, etc."
+					echo "iris session ${IRISINSTNAME}"
+					echo "do \$system.OBJ.Load(\"/nethome/marmorri/benchmark/DASH/src/cls/Utils.cls\",\"cuk\")"
+					echo "do ##class(DASH.Utils).Tune()"
+					echo "exit IRIS session (h<RETURN>)"
+					echo "sudo iris stop ${IRISINSTNAME} restart quietly"
+					;;
+				esac
+			done
+		done
+	      ;;
+	    monlbl)
+		echo "Enable 'Retain Cached Query Source' in SMP."
+		echo "Run the test so that the queries will be cached."
+		echo "Start an IRIS session in the namespace where the routines to trace are located."
+		echo "Do ^%SYS.MONLBL"
+		echo "%sqlcq* : is a wildcard for all cached queries routines and will also pick up parallel workers with hashed class names."
+		echo "%sqlcq.SHARDMASTER.cls3.* : a specific routine, but won't pick up the parallel workers"
+		echo "Save output to a csv file. : 6.) Report - Delimited (CSV) Output"
+		echo "Import into Excel for analysis."
+	      ;;
+	    SQL)
+		echo "Do \$SYSTEM.SQL.Shell()"
+		echo "Up arrow works in both SQL and ObjectScript shells."
+		echo "? : Displays help"
+		echo "browse : Browse the schemas, tables, views, fields, and map definitions in this namespace."
+		echo "! <objscr command>"
+		echo "g[o] : Run the most recently executed or loaded statement."
+		echo "l[ist] : List saved queries." 
+		echo "p[urge] : Purge all cached queries in this namespace."
+		echo "run [<filename>] : Run an SQL script."
+		echo "ALTER TABLE schema.TableName RENAME NewTableName"
+		echo "Do \$SYSTEM.SQL.Schema.ExportDDL(\"schema or *\",\"table or *\",\"/tmp/myddl\")"
+	      ;;
+	    tpchq)
+		echo "Do \$SYSTEM.SQL.Shell()"
+		echo "set selectmode odbc"
+		echo "set dialect iris"
+		a=`pwd`
+		cd /nethome/marmorri/benchmark/TPCH/src/sql/queries
+		select query in quit `ls Q*`
+		do
+		    case $query in
+		    quit)
+		      break
+		      ;;
+		    *) 
+		      cat /nethome/marmorri/benchmark/TPCH/src/sql/queries/$query
+		      ;;
+	            esac
+		done
+		cd $a
+	      ;;
+	    tpch)
+		echo "clone the DASH repo from GitHub"
+		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		read repo
+		echo "install the instance"
+		echo "Enter instance name : "
+        read tpchinst
+		echo "iris session ${tpchinst}"
+		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+		echo "copy and paste one of the following scale and organization combinations."
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-coltable\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-colfields\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row-id\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-coltable\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-colfields\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row-id\")"
+		echo "use test name pattern matching to run the benchmark as follows."
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q01*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q02*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q01*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
+	      ;;
+	    micro)
+		echo "clone the DASH repo from GitHub"
+		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		read repo
+		echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
+		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"all\",\"5\")"
+	      ;;
+	    NYTaxi)
+		echo "clone the DASH repo from GitHub"
+		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		read repo
+		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-coltable\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q01*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q02*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q01*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q02*\", \"1\")"
+		;;
+	    selectivity)
+		echo "clone the DASH repo from GitHub"
+		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		read repo
+		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-coltable\")"
+		echo "Queries are of the form below where X,Y,Z are the tags in the query id."
+		echo "select AVG(C.RowNUM) FROM C JOIN D ON C.selX = 0 AND D.selY = 0 AND C.selZ = D.selZ"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%NOPARALLEL\",\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%PARALLEL\",\"Q*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5-10*\", \"1\")"
+		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-20-20-20*\", \"1\")"
+		;;
+	    tpch1g)
+		echo "Make sure your instance has been initialized properly (see the install sequence in this tool)"
+		echo "To set up the 1 GB TPC-H"
+		echo ""
+		echo "Enter instance name : "
+		read tpchinst
+		echo "sudo iris stop ${tpchinst} quietly"
+		echo "tpchinst=$tpchinst"
+		tpchsrc=/nethome/rudack/TPCH-1GB-QAKIT/
+		echo "tpchsrc=$tpchsrc"
+		tpch=/data/${tpchinst}/sys/mgr/TPCH1G
+		echo "tpch=$tpch"
+		tpchdb=${tpchsrc}/TPCHPKIDBMALL/CACHE.DAT
+		echo "tpchdb=${tpchdb}"
+		echo "sudo mkdir $tpch"
+		echo "sudo chmod 777 $tpch"
+		echo "cp ${tpchdb} ${tpch}/IRIS.DAT"
+		echo "cp ${tpchsrc}/*.SQL $tpch"
+		echo ""
+		echo "Add the database and namespace to iris.cpf"
+		echo "sudo vi /data/${tpchinst}/sys/iris.cpf"
+		echo "TPCH=/data/${tpchinst}/sys/mgr/TPCH1G"
+		echo "TPCH=TPCH"
+		echo ""
+		echo "sudo iris start ${tpchinst} quietly"
+		echo "iris session ${tpchinst} -U \"tpch\""
+		echo "do \$system.SQL.Shell()"
+		echo "reswizzle the tables - run one of the ddl scripts in /nethome/marmorri/tpch/tpchddl-*. for example..."
+		echo "run /nethome/marmorri/tpch/tpchddl-col" 
+		echo "drop table TIMES"
+		echo "set selectmode odbc"
+		echo "set dialect iris"
+		echo "run ./STREAM0XX-PAR-NEW-6x.SQL"
+		echo "Note : this takes several hours and ends on statement 313."
+		echo "To get the individual run times, run this objectscript program below.  "
+		echo "s m=0,qp=\"QUERY\",sp=\" \",dt=0,x=\"\" f i=1:1 s x=\$O(^poCN.EIGc.1(x)) q:x=\"\"  s z=^poCN.EIGc.1(x),q=\$li(z,1),adt=\$li(z,3),ndt=\$ZDATETIMEH(adt,3),sdt=\$p(ndt,\",\",2) w !,qp w:qp'[\"E\" sp,(sdt-dt) w:m=1 m,sp,x,sp,adt,sp,ndt s dt=sdt,qp=q"
+	      ;;
+	    tpch100g)
+		echo "Make sure your instance has been initialized properly (see the install sequence in this tool)"
+		echo "To set up the 100 GB TPC-H"
+		echo ""
+		echo "Enter instance name : "
+		read tpchinst
+		echo "sudo iris stop ${tpchinst} quietly"
+		echo "tpchinst=$tpchinst"
+		tpchsrc=/nethome/rudack/TPCH100GB/20202DB
+		echo "tpchsrc=$tpchsrc"
+		tpch=/data/${tpchinst}/sys/mgr/TPCH100G
+		echo "tpch=$tpch"
+		tpchdb=${tpchsrc}/IRIS.DAT
+		echo "tpchdb=${tpchdb}"
+		echo "sudo mkdir $tpch"
+		echo "sudo chmod 777 $tpch"
+		echo "cp ${tpchdb} ${tpch}/IRIS.DAT"
+		echo "cp ${tpchsrc}/*.SQL $tpch"
+		echo ""
+		echo "Add the database and namespace to iris.cpf"
+		echo "sudo vi /data/${tpchinst}/sys/iris.cpf"
+		echo "TPCH=/data/${tpchinst}/sys/mgr/TPCH100G"
+		echo "TPCH=TPCH"
+		echo ""
+		echo "sudo iris start ${tpchinst} quietly"
+		echo "iris session ${tpchinst} -U \"tpch\""
+		echo "do \$system.SQL.Shell()"
+		echo "reswizzle the tables - run one of the ddl scripts in /nethome/marmorri/tpch/tpchddl-*. for example..."
+                echo "run /nethome/marmorri/tpch/tpchddl-col"
+		echo "drop table TIMES"
+		echo "set selectmode odbc"
+		echo "set dialect iris"
+		echo "run ./STREAM0XX-PAR-NEW-6x.SQL"
+		echo "Note : this takes several hours and ends on statement 313."
+		echo "To get the individual run times, run this objectscript program below.  "
+		echo "s m=0,qp=\"QUERY\",sp=\" \",dt=0,x=\"\" f i=1:1 s x=\$O(^poCN.EIGc.1(x)) q:x=\"\"  s z=^poCN.EIGc.1(x),q=\$li(z,1),adt=\$li(z,3),ndt=\$ZDATETIMEH(adt,3),sdt=\$p(ndt,\",\",2) w !,qp w:qp'[\"E\" sp,(sdt-dt) w:m=1 m,sp,x,sp,adt,sp,ndt s dt=sdt,qp=q"
+	      ;;
+	    java)
+		echo "XEP-JAVA"
+		echo "javac -cp \".:intersystems-jdbc-3.2.0.jar\" joe.java"
+		echo "java -cp \".:intersystems-jdbc-3.2.0.jar\" joe"
+	      ;;
+	    sharding)
+		echo "zw \$SYSTEM.Cluster.Initialize(\"RB\",\"RB-MASTER\")"
+		echo "zw \$system.Cluster.ListNodes()"
+		echo "zw \$SYSTEM.Cluster.AttachAsComputeNode(\"IRIS://colobench1-p1:1972/RB\")"
+		echo "zw \$SYSTEM.Cluster.AttachAsDataNode(\"IRIS://colobench1-p1:1972/RB\")"
+		echo "set ^IRIS.SM(\"rbprogress\")=1"
+		echo "zw \$system.Sharding.Rebalance(,0,.report)"
+		echo "s ^IRIS.SM(\"rbpause\")=3"
+		echo "s ^IRIS.SM(\"rbpause\")=\"5a\""
+	      ;;
+	    populate)	
+		echo "d \$system.SQL.Shell()"
+		echo "drop table SelectivityTest.C"
+		echo "CREATE TABLE SelectivityTest.C (Sel1 INTEGER, Sel5 INTEGER, Sel10 INTEGER, Sel20 INTEGER, Sel50 INTEGER, RowNUM INTEGER, shard key (RowNUM))"
+		echo "CREATE BITMAP INDEX Sel1IDX ON TABLE SelectivityTest.C (Sel1)"
+		echo "CREATE BITMAP INDEX Sel5IDX ON TABLE SelectivityTest.C (Sel5)"
+		echo "CREATE BITMAP INDEX Sel10IDX ON TABLE SelectivityTest.C (Sel10)"
+		echo "CREATE BITMAP INDEX Sel20IDX ON TABLE SelectivityTest.C (Sel20)"
+		echo "CREATE BITMAP INDEX Sel50IDX ON TABLE SelectivityTest.C (Sel50)"
+		echo "INSERT INTO SelectivityTest.C SELECT Sel1, Sel5, Sel10, Sel20, Sel50, RowNum from %parallel SelectivityTest.TableC"
+		echo "select count(*) from SelectivityTest.C"
+		echo "TUNE TABLE SelectivityTest.C"
+		echo "drop table SelectivityTest.D"
+		echo "CREATE TABLE SelectivityTest.D (Sel1 INTEGER, Sel5 INTEGER, Sel10 INTEGER, Sel20 INTEGER, Sel50 INTEGER, RowNUM INTEGER, shard key (RowNUM))"
+		echo "CREATE BITMAP INDEX Sel1IDX ON TABLE SelectivityTest.D (Sel1)"
+		echo "CREATE BITMAP INDEX Sel5IDX ON TABLE SelectivityTest.D (Sel5)"
+		echo "CREATE BITMAP INDEX Sel10IDX ON TABLE SelectivityTest.D (Sel10)"
+		echo "CREATE BITMAP INDEX Sel20IDX ON TABLE SelectivityTest.D (Sel20)"
+		echo "CREATE BITMAP INDEX Sel50IDX ON TABLE SelectivityTest.D (Sel50)"
+		echo "INSERT INTO SelectivityTest.D SELECT Sel1, Sel5, Sel10, Sel20, Sel50, RowNum from %parallel SelectivityTest.TableD"
+		echo "select count(*) from SelectivityTest.D"
+		echo "TUNE TABLE SelectivityTest.D"
+		echo "iris session <instance> -U \"RB\""
+		echo "Do \$SYSTEM.SQL.Shell()"
+		echo "create table i (num int, shard key (num))"
+		echo "truncate table i"
+	      ;;
+	    quit)
+	      break
+	      ;;
+	    *) 
+	      echo "Invalid option $REPLY"
+	      ;;
+	  esac
+done
