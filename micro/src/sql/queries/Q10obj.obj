@@ -4,7 +4,7 @@ Class DASH.Benchmark
 // Write !,"micro10 - $query for (x,1,1) for every x of 3-dimensional global, in order"
 ClassMethod micro() As %Float [ Language = objectscript ]
 {
-        set entries = 10000000
+    set entries = 10000000
 	// ^bench3D is a 3-dimensional global, with default 10M entries in the 1st level.
 	// Each 1st-level entry has 0-3 children, each of which has 0 or 1 child.
 	// Every data node is a valid id for a 1st level entry.
@@ -22,12 +22,12 @@ ClassMethod micro() As %Float [ Language = objectscript ]
 		}
 	}
 
-        set start = $zh
+    set start = $zh
 	set x = ^bench3D(1)
 	for i=1:1:entries {
 		set loc = $query(^bench3D(i,1,1),1,data)
 	}
-        set elapsed = $zh - start
+    set elapsed = $zh - start
 
 	kill x
 	kill ^bench3D
