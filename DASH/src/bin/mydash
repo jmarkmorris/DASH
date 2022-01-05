@@ -4,7 +4,7 @@ select topic in quit cololist install tpch tpchq NYTaxi micro selectivity SQL mo
 do
 	echo "These processes are used frequently on the colobench servers. They may not work on laptops."
 	echo "Frequently used :"
-        echo "Do \$SYSTEM.SQL.Shell()"
+    echo "Do \$SYSTEM.SQL.Shell()"
 	echo "set selectmode odbc"
 	echo "set dialect iris"
 	echo "---------------------------"
@@ -74,6 +74,8 @@ do
 					echo "irissrcdir = ${IRISSRCDIR}"
 					kitstatus=`curl https://turbo.iscinternal.com/prodlog/releng/api/kits/${build} 2>/dev/null | sed -e "s/^.*kitstatus/kitstatus/" | sed -e "s/,\"name.*//"`
 					echo ${kitstatus}
+					echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master"
+					read repo
 					echo "Enter instance name : (type return to choose again)"
 					read IRISINSTNAME
 					if [ -z ${IRISINSTNAME} ]
@@ -111,7 +113,7 @@ do
 					echo "IRIS install complete."
 					echo "Issue the following commands to tune IRIS configurations, i.e., memory, etc."
 					echo "iris session ${IRISINSTNAME}"
-					echo "do \$system.OBJ.Load(\"/nethome/marmorri/benchmark/DASH/src/cls/Utils.cls\",\"cuk\")"
+					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 					echo "do ##class(DASH.Utils).Tune()"
 					echo "exit IRIS session (h<RETURN>)"
 					echo "sudo iris stop ${IRISINSTNAME} restart quietly"
@@ -164,7 +166,7 @@ do
 	      ;;
 	    tpch)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master"
 		read repo
 		echo "install the instance"
 		echo "Enter instance name : "
@@ -193,7 +195,7 @@ do
 	      ;;
 	    micro)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master"
 		read repo
 		echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
@@ -201,7 +203,7 @@ do
 	      ;;
 	    NYTaxi)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master"
 		read repo
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
@@ -218,7 +220,7 @@ do
 		;;
 	    selectivity)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter repo directory (e.g., /nethome/marmorri/benchmark)"
+		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master"
 		read repo
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
