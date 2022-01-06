@@ -137,14 +137,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				continue
 			}
 			
-
-			//if ((query '= "all") & (query '= QueryID)) {
-				//continue
-			//}
 		
 			// Always do a warmup query. It is not recorded.
-			// No need yet to change RunObjScr.
-			// In the warmup also save the explain.
+			// For SQL warmups also save the explain to a file.
 			if (BenchmarkType="obj") {
 				set elapsed = 0
 				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
@@ -161,15 +156,18 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
 					set StepEnd = $zh
 					if elapsed > 0 {
-						set ^DashResults($i(ResultID)) = QueryID_","_$fn(elapsed,,3)
+						set ^DashResults($i(ResultID)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(elapsed,,3)_","_$zv
+						// set ^DashResults($i(ResultID)) = QueryID_","_$fn(elapsed,,3)
 					} else {
-						set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
+						set ^DashResults($i(ResultID)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
+						// set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 					}
 				} else {
 					set StepStart = $zh
 					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DontPrepare, DontExplain)
 					set StepEnd = $zh
-					set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
+					set ^DashResults($i(ResultID)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
+					// set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 				}				
 				quit:$$$ISERR(sc)
 		
@@ -182,6 +180,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		//OPEN myfile:("WEAS"):5 // add a time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
 		//USE myfile
 			//for i = 1:1:ResultID {
+			//	write !, ^DashResults(i)
 			//	write ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",^DashResults(i),",",$zv,!
 			//}
 		//CLOSE myfile
@@ -189,7 +188,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 		if verbose {
 			for i = 1:1:ResultID {
-				write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",^DashResults(i),",",$zv
+				write !, ^DashResults(i)
+				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",^DashResults(i),",",$zv
 			}
 		}
 		
@@ -250,8 +250,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 				set SQL(1) = $zstrip(SQL(1),"<>WC"), ts = $zh
 				//write !,"SQL read from file : ", SQL(1)
 
-				if ($find(SQL(1), "VIEW") || $find(SQL(1), "view"))
-				{ 
+				if ($find(SQL(1), "VIEW") || $find(SQL(1), "view")) { 
 					// TO DO add error handling
 					//write !, "preparing and executing statement with a VIEW"
 					set DDLstatement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
