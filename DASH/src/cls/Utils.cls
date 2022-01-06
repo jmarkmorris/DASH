@@ -10,25 +10,25 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
 		set:$e(path,*)'=separator path = path_separator
-		set doPrepare = 1
-		set dontExplain = 0
+		set DoPrepare = 1
+		set DontExplain = 0
 
 		// create a new database if requested
 		if (database'="") {
 			set variables("database") = database
-			do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-db.sql","create-db", .variables,,, .statement, doPrepare, dontExplain)
+			do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-db.sql","create-db", .variables,,, .statement, DoPrepare, DontExplain)
 		}
 
-		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, doPrepare, dontExplain)
+		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, DoPrepare, DontExplain)
 
 		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
-		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, doPrepare, dontExplain)
+		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, DoPrepare, DontExplain)
 		set StepEnd = $zh
 		set ^DashResults($i(ResultID)) = "Dropping existing tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		set StepStart = StepEnd
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, doPrepare, dontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(ResultID)) = "Creating new tables: "_$fn(StepEnd-StepStart,,2)_"s"
@@ -36,21 +36,21 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		
 		if ddl="ddl-row-id" {
 			set StepStart = StepEnd
-			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, doPrepare, dontExplain)
+			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, DoPrepare, DontExplain)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
 			set ^DashResults($i(ResultID)) = "Transforming foreign keys: "_$fn(StepEnd-StepStart,,2)_"s"
 		}
 		
 		set StepStart = StepEnd
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, doPrepare, dontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(ResultID)) = "Creating keys: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		if useindices {
 			set StepStart = StepEnd
-			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, doPrepare, dontExplain)
+			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, DoPrepare, DontExplain)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
 			set ^DashResults($i(ResultID)) = "Building indices: "_$fn(StepEnd-StepStart,,2)_"s"
@@ -58,13 +58,13 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		set StepStart = StepEnd
 		set variables("data_dir") = path_"data"_separator_scale_separator
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, doPrepare, dontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(ResultID)) = "Loading data: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		set StepStart = StepEnd
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, doPrepare, dontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(ResultID)) = "Tune tables: "_$fn(StepEnd-StepStart,,2)_"s"
@@ -93,9 +93,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
-	set doPrepare = 1
-	set dontPrepare = 0
-	set dontExplain = 0
+	set DoPrepare = 1
+	set DontPrepare = 0
+	set DontExplain = 0
 	set doExplain = 1
 
 	try {
@@ -107,10 +107,10 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		}
 		set variables("parasetting") = parasetting
 		set saveNS = $znspace
-		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, doPrepare, dontExplain)
+		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, DoPrepare, DontExplain)
 
-		set listdirstatement = ##class(%SQL.Statement).%New()
-    	set status = listdirstatement.%PrepareClassQuery("%File", "FileSet")
+		set ListDirStatement = ##class(%SQL.Statement).%New()
+    	set status = ListDirStatement.%PrepareClassQuery("%File", "FileSet")
     
     	if $$$ISERR(status) { 
         	do $system.OBJ.DisplayError(status)
@@ -118,58 +118,58 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
     	}
     
 		// match all Q* files in the directory, regardless of their extension.
-		// set resultSet = listdirstatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, "Q*", "Name") 
-		set resultSet = listdirstatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, query, "Name") 
+		// set ResultSet = ListDirStatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, "Q*", "Name") 
+		set ResultSet = ListDirStatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, query, "Name") 
 
 
-    	while resultSet.%Next() {
-        	set queryid = resultSet.%Get("ItemName")
+    	while ResultSet.%Next() {
+        	set QueryID = ResultSet.%Get("ItemName")
 
 			// Need to handle variable extensions here.
-			if $FIND(queryid,".sql") {
-				set queryid = $REPLACE(queryid,".sql","")
-				set benchmarktype = "sql"
-			} elseif $FIND(queryid,".obj") {
-				set queryid = $REPLACE(queryid,".obj","")
-				set benchmarktype = "obj"
+			if $FIND(QueryID,".sql") {
+				set QueryID = $REPLACE(QueryID,".sql","")
+				set BenchmarkType = "sql"
+			} elseif $FIND(QueryID,".obj") {
+				set QueryID = $REPLACE(QueryID,".obj","")
+				set BenchmarkType = "obj"
 			} else {
-				// DASH doesn't support this benchmarktype.
+				// DASH doesn't support this BenchmarkType.
 				continue
 			}
 			
 
-			//if ((query '= "all") & (query '= queryid)) {
+			//if ((query '= "all") & (query '= QueryID)) {
 				//continue
 			//}
 		
 			// Always do a warmup query. It is not recorded.
 			// No need yet to change RunObjScr.
 			// In the warmup also save the explain.
-			if (benchmarktype="obj") {
+			if (BenchmarkType="obj") {
 				set elapsed = 0
-				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".obj", 1, .elapsed)
+				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
 			} else {
-				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".sql", queryid, .variables,,, .statement, doPrepare, doExplain)
+				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DoPrepare, doExplain)
 			}
 			quit:$$$ISERR(sc)
 
 			for j = 1:1:iterations {
 				
-				if (benchmarktype="obj") {
+				if (BenchmarkType="obj") {
 					set elapsed = 0
 					set StepStart = $zh
-					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".obj", 1, .elapsed)
+					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
 					set StepEnd = $zh
 					if elapsed > 0 {
-						set ^DashResults($i(ResultID)) = queryid_","_$fn(elapsed,,3)
+						set ^DashResults($i(ResultID)) = QueryID_","_$fn(elapsed,,3)
 					} else {
-						set ^DashResults($i(ResultID)) = queryid_","_$fn(StepEnd-StepStart,,3)
+						set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 					}
 				} else {
 					set StepStart = $zh
-					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".sql", queryid, .variables,,, .statement, dontPrepare, dontExplain)
+					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DontPrepare, DontExplain)
 					set StepEnd = $zh
-					set ^DashResults($i(ResultID)) = queryid_","_$fn(StepEnd-StepStart,,3)
+					set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 				}				
 				quit:$$$ISERR(sc)
 		
@@ -204,7 +204,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	quit sc
 }
 
-ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %String, ignoreErrors As %Boolean = 0, verbose As %Boolean = 1, ByRef statement, DoPrepare As %Boolean = 1, DoExplain As %Boolean = 0) As %Status
+ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %String, IgnoreErrors As %Boolean = 0, verbose As %Boolean = 1, ByRef statement, DoPrepare As %Boolean = 1, DoExplain As %Boolean = 0) As %Status
 {
     write !, "RunSQL ", file
 	set sc = $$$OK
@@ -254,18 +254,18 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 				{ 
 					// TO DO add error handling
 					//write !, "preparing and executing statement with a VIEW"
-					set ddlstatement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
-					set ddlstatement.%SelectMode = 1 // 1=ODBC
-					set rs = ddlstatement.%Prepare(.sql)
-					set rs = ddlstatement.%Execute()
-					kill ddlstatement
+					set DDLstatement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
+					set DDLstatement.%SelectMode = 1 // 1=ODBC
+					set rs = DDLstatement.%Prepare(.sql)
+					set rs = DDLstatement.%Execute()
+					kill DDLstatement
 					set sql(1) = ""
 				} else {
 					//write !, "About to check if Explain flag is set"
 					if (DoExplain)
 					{
-						set savesql = sql(1)
-						set sql(1) = "explain "_savesql
+						set SaveSQL = sql(1)
+						set sql(1) = "explain "_SaveSQL
 						write:verbose !,"Explaining statement : ",sql(1)
 						
 						//write:verbose !,"Before prepare : "
@@ -275,7 +275,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						if ($System.Status.IsError(rs)) 
 						{
 							write:verbose !,"FAILED : ",rs,!
-							if 'ignoreErrors {
+							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error preparing explain of statement: "_rs)
 								write:verbose !,"Error preparing explain of statement. Returning.: "
 								Return sc
@@ -287,7 +287,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 
 						if (rs.%SQLCODE'=0) & (rs.%SQLCODE'=100) {
 							write:verbose !,"FAILED : ",rs.%Message
-							if 'ignoreErrors {
+							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error running explain of statement: "_rs.%Message)
 								Return sc
 							}
@@ -295,12 +295,12 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						do rs.%DisplayFormatted("CSV","explain"_ResultSetFile)				
 						if (rs.%SQLCODE'=0) & (rs.%SQLCODE'=100) {
 							write:verbose !,"FAILED: ",rs.%Message
-							if 'ignoreErrors {
+							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error displaying statement: "_rs.%Message)
 								Return sc
 							}
 						}
-						set sql(1) = savesql
+						set sql(1) = SaveSQL
 					}
 				
 					if (DoPrepare)
@@ -310,7 +310,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						if ($System.Status.IsError(rs)) 
 						{
 							write:verbose !,"FAILED : ",rs
-							if 'ignoreErrors {
+							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error preparing statement: "_rs)
 								Return sc
 							}
@@ -321,7 +321,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 					set rs = statement.%Execute()
 					if (rs.%SQLCODE'=0) & (rs.%SQLCODE'=100) {
 						write:verbose !,"FAILED : ",rs.%Message
-						if 'ignoreErrors {
+						if 'IgnoreErrors {
 							set sc = $$$ERROR($$$GeneralError, "Error running statement: "_rs.%Message)
 							Return sc
 						}
@@ -331,7 +331,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 					do rs.%DisplayFormatted("CSV",ResultSetFile)				
 					if (rs.%SQLCODE'=0) & (rs.%SQLCODE'=100) {
 						write:verbose !,"FAILED: ",rs.%Message
-						if 'ignoreErrors {
+						if 'IgnoreErrors {
 							set sc = $$$ERROR($$$GeneralError, "Error displaying statement: "_rs.%Message)
 							Return sc
 						}
