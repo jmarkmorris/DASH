@@ -12,6 +12,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set:$e(path,*)'=separator path = path_separator
 		set DoPrepare = 1
 		set DontExplain = 0
+		set ^DashResults = 0
 
 		// create a new database if requested
 		if (database'="") {
