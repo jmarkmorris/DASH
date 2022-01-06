@@ -6,7 +6,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
-	set saveNS = $znspace
+	set SaveNS = $znspace
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
 		set:$e(path,*)'=separator path = path_separator
@@ -83,7 +83,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	}
 	write:verbose !
 	kill statement
-	zn saveNS
+	zn SaveNS
 	quit sc
 }
 
@@ -96,7 +96,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	set DoPrepare = 1
 	set DontPrepare = 0
 	set DontExplain = 0
-	set doExplain = 1
+	set DoExplain = 1
 
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
@@ -106,7 +106,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			set variables("database") = database
 		}
 		set variables("parasetting") = parasetting
-		set saveNS = $znspace
+		set SaveNS = $znspace
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, DoPrepare, DontExplain)
 
 		set ListDirStatement = ##class(%SQL.Statement).%New()
@@ -126,9 +126,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
         	set QueryID = ResultSet.%Get("ItemName")
 
 			// Need to handle variable extensions here.
-			if $FIND(QueryID,".sql") {
-				set QueryID = $REPLACE(QueryID,".sql","")
-				set BenchmarkType = "sql"
+			if $FIND(QueryID,".SQL") {
+				set QueryID = $REPLACE(QueryID,".SQL","")
+				set BenchmarkType = "SQL"
 			} elseif $FIND(QueryID,".obj") {
 				set QueryID = $REPLACE(QueryID,".obj","")
 				set BenchmarkType = "obj"
@@ -149,7 +149,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				set elapsed = 0
 				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
 			} else {
-				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DoPrepare, doExplain)
+				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DoPrepare, DoExplain)
 			}
 			quit:$$$ISERR(sc)
 
@@ -200,7 +200,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	}
 	write:verbose !
 	kill statement
-	zn saveNS
+	zn SaveNS
 	quit sc
 }
 
@@ -218,8 +218,8 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
         quit:$$$ISERR(sc)
 
 		
-        set sql = 1
-        set sql(1) = ""
+        set SQL = 1
+        set SQL(1) = ""
         
 
         while 'stream.AtEnd {
@@ -244,32 +244,32 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 				for {
 					set str = $order(replace(str),1,rep)
 					quit:str=""
-					set sql(1) = $replace(sql(1),"${"_str_"}",rep)
+					set SQL(1) = $replace(SQL(1),"${"_str_"}",rep)
 				}
 
-				set sql(1) = $zstrip(sql(1),"<>WC"), ts = $zh
-				//write !,"SQL read from file : ", sql(1)
+				set SQL(1) = $zstrip(SQL(1),"<>WC"), ts = $zh
+				//write !,"SQL read from file : ", SQL(1)
 
-				if ($find(sql(1), "VIEW") || $find(sql(1), "view"))
+				if ($find(SQL(1), "VIEW") || $find(SQL(1), "view"))
 				{ 
 					// TO DO add error handling
 					//write !, "preparing and executing statement with a VIEW"
 					set DDLstatement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 					set DDLstatement.%SelectMode = 1 // 1=ODBC
-					set rs = DDLstatement.%Prepare(.sql)
+					set rs = DDLstatement.%Prepare(.SQL)
 					set rs = DDLstatement.%Execute()
 					kill DDLstatement
-					set sql(1) = ""
+					set SQL(1) = ""
 				} else {
 					//write !, "About to check if Explain flag is set"
 					if (DoExplain)
 					{
-						set SaveSQL = sql(1)
-						set sql(1) = "explain "_SaveSQL
-						write:verbose !,"Explaining statement : ",sql(1)
+						set SaveSQL = SQL(1)
+						set SQL(1) = "explain "_SaveSQL
+						write:verbose !,"Explaining statement : ",SQL(1)
 						
 						//write:verbose !,"Before prepare : "
-						set rs = statement.%Prepare(.sql)
+						set rs = statement.%Prepare(.SQL)
 						//write:verbose !,"After prepare : "
 
 						if ($System.Status.IsError(rs)) 
@@ -300,13 +300,13 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 								Return sc
 							}
 						}
-						set sql(1) = SaveSQL
+						set SQL(1) = SaveSQL
 					}
 				
 					if (DoPrepare)
 					{
-						write:verbose !,"Preparing statement : ",sql(1)
-						set rs = statement.%Prepare(.sql)
+						write:verbose !,"Preparing statement : ",SQL(1)
+						set rs = statement.%Prepare(.SQL)
 						if ($System.Status.IsError(rs)) 
 						{
 							write:verbose !,"FAILED : ",rs
@@ -317,7 +317,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						}
 						
 					}
-					write:verbose !,"Executing statement : ",sql(1)
+					write:verbose !,"Executing statement : ",SQL(1)
 					set rs = statement.%Execute()
 					if (rs.%SQLCODE'=0) & (rs.%SQLCODE'=100) {
 						write:verbose !,"FAILED : ",rs.%Message
@@ -340,18 +340,18 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						write:verbose&&rs.%ROWCOUNT rs.%ROWCOUNT," rows affected"
 					}
 
-					set sql(1) = ""
+					set SQL(1) = ""
 				}
 
 			} else {
 				// this is adding CR LF 
-				set sql(1) = sql(1)_$c(13,10)_line
+				set SQL(1) = SQL(1)_$c(13,10)_line
 			}
 
         }
 
-		if $zstrip(sql(1),"<>WC")'="" {
-			write:verbose !,"leftover statement not executed: ",!,sql(1)
+		if $zstrip(SQL(1),"<>WC")'="" {
+			write:verbose !,"leftover statement not executed: ",!,SQL(1)
 		}
         
     } catch (ex) {
