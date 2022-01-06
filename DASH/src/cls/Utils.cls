@@ -25,13 +25,13 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set variables("schema") = $s(schema="":"", 1:schema_".")
 		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, DoPrepare, DontExplain)
 		set StepEnd = $zh
-		set ^DashResults($i(ResultID)) = "Dropping existing tables: "_$fn(StepEnd-StepStart,,2)_"s"
+		set ^DashResults($i(^DashResults)) = "Dropping existing tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		set ^DashResults($i(ResultID)) = "Creating new tables: "_$fn(StepEnd-StepStart,,2)_"s"
+		set ^DashResults($i(^DashResults)) = "Creating new tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		
 		if ddl="ddl-row-id" {
@@ -39,21 +39,21 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, DoPrepare, DontExplain)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			set ^DashResults($i(ResultID)) = "Transforming foreign keys: "_$fn(StepEnd-StepStart,,2)_"s"
+			set ^DashResults($i(^DashResults)) = "Transforming foreign keys: "_$fn(StepEnd-StepStart,,2)_"s"
 		}
 		
 		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		set ^DashResults($i(ResultID)) = "Creating keys: "_$fn(StepEnd-StepStart,,2)_"s"
+		set ^DashResults($i(^DashResults)) = "Creating keys: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		if useindices {
 			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, DoPrepare, DontExplain)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			set ^DashResults($i(ResultID)) = "Building indices: "_$fn(StepEnd-StepStart,,2)_"s"
+			set ^DashResults($i(^DashResults)) = "Building indices: "_$fn(StepEnd-StepStart,,2)_"s"
 		}
 
 		set StepStart = StepEnd
@@ -61,18 +61,18 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		set ^DashResults($i(ResultID)) = "Loading data: "_$fn(StepEnd-StepStart,,2)_"s"
+		set ^DashResults($i(^DashResults)) = "Loading data: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, DoPrepare, DontExplain)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		set ^DashResults($i(ResultID)) = "Tune tables: "_$fn(StepEnd-StepStart,,2)_"s"
+		set ^DashResults($i(^DashResults)) = "Tune tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 
 		if verbose {
 			write !,"Total time spent: "_$fn(StepEnd-SequenceStart,,2)_"s"
-			for i = 1:1:ResultID {
+			for i = 1:1:^DashResults {
 				write !,"  - ",^DashResults(i)
 			}
 		}
@@ -156,18 +156,18 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
 					set StepEnd = $zh
 					if elapsed > 0 {
-						set ^DashResults($i(ResultID)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(elapsed,,3)_","_$zv
-						// set ^DashResults($i(ResultID)) = QueryID_","_$fn(elapsed,,3)
+						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(elapsed,,3)_","_$zv
+						// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(elapsed,,3)
 					} else {
-						set ^DashResults($i(ResultID)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
-						// set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
+						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
+						// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 					}
 				} else {
 					set StepStart = $zh
 					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DontPrepare, DontExplain)
 					set StepEnd = $zh
-					set ^DashResults($i(ResultID)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
-					// set ^DashResults($i(ResultID)) = QueryID_","_$fn(StepEnd-StepStart,,3)
+					set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
+					// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 				}				
 				quit:$$$ISERR(sc)
 		
@@ -179,7 +179,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		//SET myfile = "/nethome/marmorri/benchmark/results/queued-results.csv"
 		//OPEN myfile:("WEAS"):5 // add a time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
 		//USE myfile
-			//for i = 1:1:ResultID {
+			//for i = 1:1:^DashResults {
 			//	write !, ^DashResults(i)
 			//	write ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",^DashResults(i),",",$zv,!
 			//}
@@ -187,7 +187,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 
 		if verbose {
-			for i = 1:1:ResultID {
+			for i = 1:1:^DashResults {
 				write !, ^DashResults(i)
 				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",^DashResults(i),",",$zv
 			}
