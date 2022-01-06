@@ -1,6 +1,8 @@
 Class DASH.Utils
 {
-// The '•' character is used as a fun alternative to CamelCase. The '•' keystroke sequence is option-8 on Mac, alt-0165 on Win.
+// I tried using the '•' character is used as a fun alternative to CamelCase. 
+// The '•' keystroke sequence is option-8 on Mac, alt-0165 on Win.
+// However, this would not compile.
 ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "100", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1) As %Status [ SqlName = Load, SqlProc ]
 {
 	set sc = $$$OK
@@ -21,57 +23,57 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, doPrepare, dontExplain)
 
-		set (sequence•start, step•start) = $zh
+		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
 		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, doPrepare, dontExplain)
-		set step•end = $zh
-		set t($i(result•id)) = "Dropping existing tables: "_$fn(step•end-step•start,,2)_"s"
+		set StepEnd = $zh
+		set t($i(ResultID)) = "Dropping existing tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
-		set step•start = step•end
+		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set step•end = $zh
-		set t($i(result•id)) = "Creating new tables: "_$fn(step•end-step•start,,2)_"s"
+		set StepEnd = $zh
+		set t($i(ResultID)) = "Creating new tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		
 		if ddl="ddl-row-id" {
-			set step•start = step•end
+			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, doPrepare, dontExplain)
 			quit:$$$ISERR(sc)
-			set step•end = $zh
-			set t($i(result•id)) = "Transforming foreign keys: "_$fn(step•end-step•start,,2)_"s"
+			set StepEnd = $zh
+			set t($i(ResultID)) = "Transforming foreign keys: "_$fn(StepEnd-StepStart,,2)_"s"
 		}
 		
-		set step•start = step•end
+		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set step•end = $zh
-		set t($i(result•id)) = "Creating keys: "_$fn(step•end-step•start,,2)_"s"
+		set StepEnd = $zh
+		set t($i(ResultID)) = "Creating keys: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		if useindices {
-			set step•start = step•end
+			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, doPrepare, dontExplain)
 			quit:$$$ISERR(sc)
-			set step•end = $zh
-			set t($i(result•id)) = "Building indices: "_$fn(step•end-step•start,,2)_"s"
+			set StepEnd = $zh
+			set t($i(ResultID)) = "Building indices: "_$fn(StepEnd-StepStart,,2)_"s"
 		}
 
-		set step•start = step•end
+		set StepStart = StepEnd
 		set variables("data_dir") = path_"data"_separator_scale_separator
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set step•end = $zh
-		set t($i(result•id)) = "Loading data: "_$fn(step•end-step•start,,2)_"s"
+		set StepEnd = $zh
+		set t($i(ResultID)) = "Loading data: "_$fn(StepEnd-StepStart,,2)_"s"
 
-		set step•start = step•end
+		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set step•end = $zh
-		set t($i(result•id)) = "Tune tables: "_$fn(step•end-step•start,,2)_"s"
+		set StepEnd = $zh
+		set t($i(ResultID)) = "Tune tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 
 		if verbose {
-			write !,"Total time spent: "_$fn(step•end-sequence•start,,2)_"s"
+			write !,"Total time spent: "_$fn(StepEnd-SequenceStart,,2)_"s"
 			for i = 1:1:t {
 				write !,"  - ",t(i)
 			}
@@ -157,19 +159,19 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				
 				if (benchmarktype="obj") {
 					set elapsed = 0
-					set step•start = $zh
+					set StepStart = $zh
 					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".obj", 1, .elapsed)
-					set step•end = $zh
+					set StepEnd = $zh
 					if elapsed > 0 {
-						set t($i(result•id)) = queryid_","_$fn(elapsed,,3)
+						set t($i(ResultID)) = queryid_","_$fn(elapsed,,3)
 					} else {
-						set t($i(result•id)) = queryid_","_$fn(step•end-step•start,,3)
+						set t($i(ResultID)) = queryid_","_$fn(StepEnd-StepStart,,3)
 					}
 				} else {
-					set step•start = $zh
+					set StepStart = $zh
 					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".sql", queryid, .variables,,, .statement, dontPrepare, dontExplain)
-					set step•end = $zh
-					set t($i(result•id)) = queryid_","_$fn(step•end-step•start,,3)
+					set StepEnd = $zh
+					set t($i(ResultID)) = queryid_","_$fn(StepEnd-StepStart,,3)
 				}				
 				quit:$$$ISERR(sc)
 		
