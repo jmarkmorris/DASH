@@ -1,6 +1,6 @@
 Class DASH.Utils
 {
-// The '•' character is used as a fun alternative to CamelCase. The keystroke sequence is option-8 on Mac, alt-0165 on Win.
+// The '•' character is used as a fun alternative to CamelCase. The '•' keystroke sequence is option-8 on Mac, alt-0165 on Win.
 ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "100", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1) As %Status [ SqlName = Load, SqlProc ]
 {
 	set sc = $$$OK
@@ -157,19 +157,19 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				
 				if (benchmarktype="obj") {
 					set elapsed = 0
-					set t1 = $zh
+					set step•start = $zh
 					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".obj", 1, .elapsed)
-					set t2 = $zh
+					set step•end = $zh
 					if elapsed > 0 {
 						set t($i(result•id)) = queryid_","_$fn(elapsed,,3)
 					} else {
-						set t($i(result•id)) = queryid_","_$fn(t2-t1,,3)
+						set t($i(result•id)) = queryid_","_$fn(step•end-step•start,,3)
 					}
 				} else {
-					set t1 = $zh
+					set step•start = $zh
 					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".sql", queryid, .variables,,, .statement, dontPrepare, dontExplain)
-					set t2 = $zh
-					set t($i(result•id)) = queryid_","_$fn(t2-t1,,3)
+					set step•end = $zh
+					set t($i(result•id)) = queryid_","_$fn(step•end-step•start,,3)
 				}				
 				quit:$$$ISERR(sc)
 		
@@ -392,18 +392,18 @@ ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As
 
 ClassMethod Tune() As %Integer [ Language = objectscript ]
 {
- zn "%SYS"
- s Obj=##Class(Config.config).Open()
- s Obj.MaxServers=64
- s Obj.MaxServerConn=64
- s Obj.globals8kb=193058
- s Obj.locksiz=128057344
- s Obj.gmheap=51200000
- s Obj.routines=1020
- s Obj.LargePagesRequired=1
- s Status=Obj.%Save()
+	zn "%SYS"
+	s Obj=##Class(Config.config).Open()
+	s Obj.MaxServers=64
+	s Obj.MaxServerConn=64
+	s Obj.globals8kb=193058
+	s Obj.locksiz=128057344
+	s Obj.gmheap=51200000
+	s Obj.routines=1020
+	s Obj.LargePagesRequired=1
+	s Status=Obj.%Save()
 
- quit $$$OK
+	quit $$$OK
 }
 
 }
