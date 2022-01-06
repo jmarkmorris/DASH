@@ -135,8 +135,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			if $FIND(QueryID,".sql") {
 				set QueryID = $REPLACE(QueryID,".sql","")
 				set BenchmarkType = "sql"
-			} elseif $FIND(QueryID,".obj") {
-				set QueryID = $REPLACE(QueryID,".obj","")
+			} elseif $FIND(QueryID,".cls") {
+				set QueryID = $REPLACE(QueryID,".cls","")
 				set BenchmarkType = "obj"
 			} else {
 				// DASH doesn't support this BenchmarkType.
@@ -147,18 +147,19 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			// For SQL warmups also save the explain to a file.
 			if (BenchmarkType="obj") {
 				set elapsed = 0
-				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
+				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 			} else {
 				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DoPrepare, DoExplain)
 			}
 			quit:$$$ISERR(sc)
 
+			if '$DATA(^IndicesGlobal) {set ^IndicesGlobal = ""}
 			for j = 1:1:iterations {
 				
 				if (BenchmarkType="obj") {
 					set elapsed = 0
 					set StepStart = $zh
-					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
+					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 					set StepEnd = $zh
 					if elapsed > 0 {
 						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^IndicesGlobal_",,"_QueryID_","_$fn(elapsed,,3)_","_$zv
