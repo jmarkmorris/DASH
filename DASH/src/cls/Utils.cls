@@ -6,7 +6,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
-	set SaveNS = $znspace
+	set InvokedFromNamespace = $znspace
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
 		set:$e(path,*)'=separator path = path_separator
@@ -22,6 +22,10 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, DoPrepare, DontExplain)
 		
 		kill ^DashResults // in this database
+		
+		set ^SchemaGlobal = schema  // Why do we need schema?
+		set ^ScaleGlobal = scale
+		if useindices {set ^IndicesGlobal = "INDICES"} else {set ^IndicesGlobal = "NO INDICES"}
 
 		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
@@ -85,7 +89,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	}
 	write:verbose !
 	kill statement
-	set $namespace =  SaveNS
+	set $namespace =  InvokedFromNamespace
 	quit sc
 }
 
@@ -107,7 +111,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			set variables("database") = database
 		}
 		set variables("parasetting") = parasetting
-		set SaveNS = $znspace
+		set InvokedFromNamespace = $znspace
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, DoPrepare, DontExplain)
 
 		kill ^DashResults // in this database
@@ -157,17 +161,17 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".obj", 1, .elapsed)
 					set StepEnd = $zh
 					if elapsed > 0 {
-						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(elapsed,,3)_","_$zv
+						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^IndicesGlobal_",,"_QueryID_","_$fn(elapsed,,3)_","_$zv
 						// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(elapsed,,3)
 					} else {
-						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
+						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^IndicesGlobal_",,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
 						// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 					}
 				} else {
 					set StepStart = $zh
 					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DontPrepare, DontExplain)
 					set StepEnd = $zh
-					set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_",,,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
+					set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^IndicesGlobal_",,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
 					// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(StepEnd-StepStart,,3)
 				}				
 				quit:$$$ISERR(sc)
@@ -182,14 +186,14 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		//USE myfile
 			//for i = 1:1:^DashResults {
 			//	write !, ^DashResults(i)
-			//	write ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",^DashResults(i),",",$zv,!
+			//	write ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^IndicesGlobal_",,",^DashResults(i),",",$zv,!
 			//}
 		//CLOSE myfile
 
 		if verbose {
 			for i = 1:1:^DashResults {
 				write !, ^DashResults(i)
-				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,",,,",^DashResults(i),",",$zv
+				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^IndicesGlobal_",,",^DashResults(i),",",$zv
 			}
 		}
 		
@@ -200,7 +204,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	}
 	write:verbose !
 	kill statement
-	set $namespace =  SaveNS
+	set $namespace =  InvokedFromNamespace
 	quit sc
 }
 
