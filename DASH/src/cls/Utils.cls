@@ -1,5 +1,6 @@
 Class DASH.Utils
 {
+// The '•' character is used as a fun alternative to CamelCase. The keystroke sequence is option-8 on Mac, alt-0165 on Win.
 ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "100", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1) As %Status [ SqlName = Load, SqlProc ]
 {
 	set sc = $$$OK
