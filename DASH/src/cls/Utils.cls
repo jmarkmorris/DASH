@@ -20,45 +20,57 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, doPrepare, dontExplain)
 
-		set t1 = $zh
-
+		set (sequence•start, step•start) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
 		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, doPrepare, dontExplain)
-		set t2 = $zh, t($i(t)) = "Dropping existing tables: "_$fn(t2-t1,,2)_"s"
+		set step•end = $zh
+		set t($i(result•id)) = "Dropping existing tables: "_$fn(step•end-step•start,,2)_"s"
 
+		set step•start = step•end
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set (t3, t4) = $zh, t($i(t)) = "Creating new tables: "_$fn(t3-t2,,2)_"s"
+		set step•end = $zh
+		set t($i(result•id)) = "Creating new tables: "_$fn(step•end-step•start,,2)_"s"
 
-
+		
 		if ddl="ddl-row-id" {
+			set step•start = step•end
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, doPrepare, dontExplain)
 			quit:$$$ISERR(sc)
-			set t4 = $zh, t($i(t)) = "Transforming foreign keys: "_$fn(t4-t3,,2)_"s"
+			set step•end = $zh
+			set t($i(result•id)) = "Transforming foreign keys: "_$fn(step•end-step•start,,2)_"s"
 		}
 		
+		set step•start = step•end
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set (t5, t6) = $zh, t($i(t)) = "Creating keys: "_$fn(t5-t4,,2)_"s"
+		set step•end = $zh
+		set t($i(result•id)) = "Creating keys: "_$fn(step•end-step•start,,2)_"s"
 
 		if useindices {
+			set step•start = step•end
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, doPrepare, dontExplain)
 			quit:$$$ISERR(sc)
-			set t6 = $zh, t($i(t)) = "Building indices: "_$fn(t6-t5,,2)_"s"
+			set step•end = $zh
+			set t($i(result•id)) = "Building indices: "_$fn(step•end-step•start,,2)_"s"
 		}
 
+		set step•start = step•end
 		set variables("data_dir") = path_"data"_separator_scale_separator
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set t7 = $zh, t($i(t)) = "Loading data: "_$fn(t7-t6,,2)_"s"
+		set step•end = $zh
+		set t($i(result•id)) = "Loading data: "_$fn(step•end-step•start,,2)_"s"
 
+		set step•start = step•end
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, doPrepare, dontExplain)
 		quit:$$$ISERR(sc)
-		set t8 = $zh, t($i(t)) = "Tune tables: "_$fn(t8-t7,,2)_"s"
+		set step•end = $zh
+		set t($i(result•id)) = "Tune tables: "_$fn(step•end-step•start,,2)_"s"
 
 
 		if verbose {
-			write !,"Total time spent: "_$fn(t8-t1,,2)_"s"
+			write !,"Total time spent: "_$fn(step•end-sequence•start,,2)_"s"
 			for i = 1:1:t {
 				write !,"  - ",t(i)
 			}
@@ -148,18 +160,18 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".obj", 1, .elapsed)
 					set t2 = $zh
 					if elapsed > 0 {
-						set t($i(t)) = queryid_","_$fn(elapsed,,3)
+						set t($i(result•id)) = queryid_","_$fn(elapsed,,3)
 					} else {
-						set t($i(t)) = queryid_","_$fn(t2-t1,,3)
+						set t($i(result•id)) = queryid_","_$fn(t2-t1,,3)
 					}
 				} else {
 					set t1 = $zh
 					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_queryid_".sql", queryid, .variables,,, .statement, dontPrepare, dontExplain)
 					set t2 = $zh
-					set t($i(t)) = queryid_","_$fn(t2-t1,,3)
+					set t($i(result•id)) = queryid_","_$fn(t2-t1,,3)
 				}				
 				quit:$$$ISERR(sc)
-				
+		
 			}
 		
         }
