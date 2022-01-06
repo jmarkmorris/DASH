@@ -12,7 +12,6 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set:$e(path,*)'=separator path = path_separator
 		set DoPrepare = 1
 		set DontExplain = 0
-		set ^DashResults = 0
 
 		// create a new database if requested
 		if (database'="") {
@@ -21,6 +20,8 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		}
 
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, DoPrepare, DontExplain)
+		
+		kill ^DashResults // in this database
 
 		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
@@ -84,13 +85,12 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	}
 	write:verbose !
 	kill statement
-	zn SaveNS
+	set $namespace =  SaveNS
 	quit sc
 }
 
 ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "all", iterations As %String = "5", verbose As %Boolean = 1) As %Status
 {
-	kill t
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
@@ -110,6 +110,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		set SaveNS = $znspace
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, DoPrepare, DontExplain)
 
+		kill ^DashResults // in this database
+
 		set ListDirStatement = ##class(%SQL.Statement).%New()
     	set status = ListDirStatement.%PrepareClassQuery("%File", "FileSet")
     
@@ -122,14 +124,13 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		// set ResultSet = ListDirStatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, "Q*", "Name") 
 		set ResultSet = ListDirStatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, query, "Name") 
 
-
     	while ResultSet.%Next() {
         	set QueryID = ResultSet.%Get("ItemName")
 
 			// Need to handle variable extensions here.
-			if $FIND(QueryID,".SQL") {
-				set QueryID = $REPLACE(QueryID,".SQL","")
-				set BenchmarkType = "SQL"
+			if $FIND(QueryID,".sql") {
+				set QueryID = $REPLACE(QueryID,".sql","")
+				set BenchmarkType = "sql"
 			} elseif $FIND(QueryID,".obj") {
 				set QueryID = $REPLACE(QueryID,".obj","")
 				set BenchmarkType = "obj"
@@ -137,7 +138,6 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				// DASH doesn't support this BenchmarkType.
 				continue
 			}
-			
 		
 			// Always do a warmup query. It is not recorded.
 			// For SQL warmups also save the explain to a file.
@@ -186,7 +186,6 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			//}
 		//CLOSE myfile
 
-
 		if verbose {
 			for i = 1:1:^DashResults {
 				write !, ^DashResults(i)
@@ -201,7 +200,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	}
 	write:verbose !
 	kill statement
-	zn SaveNS
+	set $namespace =  SaveNS
 	quit sc
 }
 
