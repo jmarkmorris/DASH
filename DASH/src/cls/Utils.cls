@@ -23,9 +23,10 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		
 		kill ^DashResults // in this database
 		
-		set ^SchemaGlobal = schema  // Why do we need schema?
-		set ^ScaleGlobal = scale
-		if useindices {set ^IndicesGlobal = "INDICES"} else {set ^IndicesGlobal = "NO INDICES"}
+		set ^Schema.Global = schema  // Why do we need schema?
+		set ^Scale.Global = scale
+		set ^DDL.Global = ddl
+		if useindices {set ^Indices.Global = "INDICES"} else {set ^Indices.Global = "NO INDICES"}
 
 		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
@@ -153,7 +154,11 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			}
 			quit:$$$ISERR(sc)
 
-			if '$DATA(^IndicesGlobal) {set ^IndicesGlobal = ""}
+			if '$DATA(^Indices.Global) {set ^Indices.Global = ""}
+			if '$DATA(^DDL.Global) {set ^DDL.Global = ""}
+			if '$DATA(^Scale.Global) {set ^Scale.Global = ""}
+			if (parasetting = "") {set parasetting = "autoparallel"}
+
 			for j = 1:1:iterations {
 				
 				if (BenchmarkType="obj") {
@@ -162,18 +167,15 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 					set StepEnd = $zh
 					if elapsed > 0 {
-						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^IndicesGlobal_",,"_QueryID_","_$fn(elapsed,,3)_","_$zv
-						// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(elapsed,,3)
+						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^Scale.Global
 					} else {
-						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^IndicesGlobal_",,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
-						// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(StepEnd-StepStart,,3)
+						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 					}
 				} else {
 					set StepStart = $zh
 					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DontPrepare, DontExplain)
 					set StepEnd = $zh
-					set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^IndicesGlobal_",,"_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv
-					// set ^DashResults($i(^DashResults)) = QueryID_","_$fn(StepEnd-StepStart,,3)
+					set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 				}				
 				quit:$$$ISERR(sc)
 		
@@ -181,20 +183,20 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		
         }
 
-		// things to add : scale, organization
 		//SET myfile = "/nethome/marmorri/benchmark/results/queued-results.csv"
-		//OPEN myfile:("WEAS"):5 // add a time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
+		//OPEN myfile:("WEAS"):5 // time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
 		//USE myfile
+			//write !, "server, para, indices, organization, query, run time, build, scale"
 			//for i = 1:1:^DashResults {
 			//	write !, ^DashResults(i)
-			//	write ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^IndicesGlobal_",,",^DashResults(i),",",$zv,!
 			//}
 		//CLOSE myfile
 
 		if verbose {
+			write !, "server, para, indices, organization, query, run time, build, scale"
 			for i = 1:1:^DashResults {
 				write !, ^DashResults(i)
-				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^IndicesGlobal_",,",^DashResults(i),",",$zv
+				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^Indices.Global_",,",^DashResults(i),",",$zv
 			}
 		}
 		
