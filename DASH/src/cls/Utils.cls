@@ -153,12 +153,12 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				do ##class(%Monitor.System.LineByLine).Stop()
 				set status=$SYSTEM.SQL.Util.SetOption("CachedQuerySaveSource",1,.oldval) // retain source
 
-				// set up MonLBL : use default metrics and %sqlcq* 
+				// set up MonLBL : metrics and %sqlcq* 
 				set metrics=##class(%Monitor.System.LineByLine).GetMetrics(2) // 2=all metrics
 				
 				set RoutineList = $listbuild("%sqlcq*")
 				set MetricsList = $listfromstring(metrics)
-				//set status=##class(%Monitor.System.LineByLine).Start(RoutineList, "") /* default metrics */
+				// set status=##class(%Monitor.System.LineByLine).Start(RoutineList, "") /* default metrics */
 				set status=##class(%Monitor.System.LineByLine).Start(RoutineList,MetricsList)
 				set RoutineCount=##class(%Monitor.System.LineByLine).GetRoutineCount()
 				write:verbose !,"MONLBL : monitoring ", $listlength(MetricsList), " metrics for ",RoutineCount, " %sqlcq* routines"
@@ -193,11 +193,18 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						for field=1:1:elements {
 							write ",",$list(row,field)
 						}
+
+						set atom="+"_line_"^"_RoutineName
+						//write !, "atom =", atom
+						write ",", $text(@atom)
+
 						do $INCREMENT(line)
 					}
 					kill rset
-				
-					// ToDo -- Which directory to output MONLBL results? /tmp? <unique? filename?>.csv
+
+					// ToDo -- Display a formatted limited set of metrics.  Line,Glorefs???,RtnLine,Time,TotalTime,Source
+					// ToDo -- Display a detailed csv set of metrics. Well, we already have that.
+					// ToDo -- Stage MONLBL results in the same place where the explains are written.
 				}
 
 				do ##class(%Monitor.System.LineByLine).Stop()
