@@ -1,6 +1,6 @@
 PS3="Enter your choice : "
 
-select topic in quit cololist install tpch tpchq NYTaxi micro selectivity SQL monlbl PBscale sharding rtpc shd
+select topic in quit cololist install tpch tpchq NYTaxi micro selectivity MONLBL SQL sharding rtpc shd
 do
 	echo "These processes are used frequently on the colobench servers. They may not work on laptops."
 	echo "Frequently used :"
@@ -122,7 +122,12 @@ do
 			done
 		done
 	      ;;
-	    monlbl)
+	    MONLBL)
+		echo "DASH benchmarks perform a MONLBL if the iteration count is specified as 0, e.g.,"
+		echo "do ##class(DASH.Utils).Run(\"/nethome/marmorri/DASH-master/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"0\")"
+		  ;;
+		oldMONLBL)
+		echo "Steps to perform a MONLBL manually :"
 		echo "Enable 'Retain Cached Query Source' in SMP."
 		echo "Run the test so that the queries will be cached."
 		echo "Start an IRIS session in the namespace where the routines to trace are located."
@@ -146,9 +151,7 @@ do
 		echo "Do \$SYSTEM.SQL.Schema.ExportDDL(\"schema or *\",\"table or *\",\"/tmp/myddl\")"
 	      ;;
 	    tpchq)
-		echo "Do \$SYSTEM.SQL.Shell()"
-		echo "set selectmode odbc"
-		echo "set dialect iris"
+		echo "Display TPCH query text : "
 		a=`pwd`
 		cd /nethome/marmorri/benchmark/TPCH/src/sql/queries
 		select query in quit `ls Q*`
@@ -166,10 +169,10 @@ do
 	      ;;
 	    tpch)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
 		read repo
 		echo "install the instance"
-		echo "Enter instance name : "
+		echo "enter instance name : "
         read tpchinst
 		echo "iris session ${tpchinst}"
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
@@ -195,7 +198,7 @@ do
 	      ;;
 	    micro)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
 		read repo
 		echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
@@ -203,7 +206,7 @@ do
 	      ;;
 	    NYTaxi)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
 		read repo
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
@@ -220,7 +223,7 @@ do
 		;;
 	    selectivity)
 		echo "clone the DASH repo from GitHub"
-		echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
 		read repo
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
@@ -235,85 +238,6 @@ do
 		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5-10*\", \"1\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-20-20-20*\", \"1\")"
 		;;
-	    tpch1g)
-		echo "Make sure your instance has been initialized properly (see the install sequence in this tool)"
-		echo "To set up the 1 GB TPC-H"
-		echo ""
-		echo "Enter instance name : "
-		read tpchinst
-		echo "sudo iris stop ${tpchinst} quietly"
-		echo "tpchinst=$tpchinst"
-		tpchsrc=/nethome/rudack/TPCH-1GB-QAKIT/
-		echo "tpchsrc=$tpchsrc"
-		tpch=/data/${tpchinst}/sys/mgr/TPCH1G
-		echo "tpch=$tpch"
-		tpchdb=${tpchsrc}/TPCHPKIDBMALL/CACHE.DAT
-		echo "tpchdb=${tpchdb}"
-		echo "sudo mkdir $tpch"
-		echo "sudo chmod 777 $tpch"
-		echo "cp ${tpchdb} ${tpch}/IRIS.DAT"
-		echo "cp ${tpchsrc}/*.SQL $tpch"
-		echo ""
-		echo "Add the database and namespace to iris.cpf"
-		echo "sudo vi /data/${tpchinst}/sys/iris.cpf"
-		echo "TPCH=/data/${tpchinst}/sys/mgr/TPCH1G"
-		echo "TPCH=TPCH"
-		echo ""
-		echo "sudo iris start ${tpchinst} quietly"
-		echo "iris session ${tpchinst} -U \"tpch\""
-		echo "do \$system.SQL.Shell()"
-		echo "reswizzle the tables - run one of the ddl scripts in /nethome/marmorri/tpch/tpchddl-*. for example..."
-		echo "run /nethome/marmorri/tpch/tpchddl-col" 
-		echo "drop table TIMES"
-		echo "set selectmode odbc"
-		echo "set dialect iris"
-		echo "run ./STREAM0XX-PAR-NEW-6x.SQL"
-		echo "Note : this takes several hours and ends on statement 313."
-		echo "To get the individual run times, run this objectscript program below.  "
-		echo "s m=0,qp=\"QUERY\",sp=\" \",dt=0,x=\"\" f i=1:1 s x=\$O(^poCN.EIGc.1(x)) q:x=\"\"  s z=^poCN.EIGc.1(x),q=\$li(z,1),adt=\$li(z,3),ndt=\$ZDATETIMEH(adt,3),sdt=\$p(ndt,\",\",2) w !,qp w:qp'[\"E\" sp,(sdt-dt) w:m=1 m,sp,x,sp,adt,sp,ndt s dt=sdt,qp=q"
-	      ;;
-	    tpch100g)
-		echo "Make sure your instance has been initialized properly (see the install sequence in this tool)"
-		echo "To set up the 100 GB TPC-H"
-		echo ""
-		echo "Enter instance name : "
-		read tpchinst
-		echo "sudo iris stop ${tpchinst} quietly"
-		echo "tpchinst=$tpchinst"
-		tpchsrc=/nethome/rudack/TPCH100GB/20202DB
-		echo "tpchsrc=$tpchsrc"
-		tpch=/data/${tpchinst}/sys/mgr/TPCH100G
-		echo "tpch=$tpch"
-		tpchdb=${tpchsrc}/IRIS.DAT
-		echo "tpchdb=${tpchdb}"
-		echo "sudo mkdir $tpch"
-		echo "sudo chmod 777 $tpch"
-		echo "cp ${tpchdb} ${tpch}/IRIS.DAT"
-		echo "cp ${tpchsrc}/*.SQL $tpch"
-		echo ""
-		echo "Add the database and namespace to iris.cpf"
-		echo "sudo vi /data/${tpchinst}/sys/iris.cpf"
-		echo "TPCH=/data/${tpchinst}/sys/mgr/TPCH100G"
-		echo "TPCH=TPCH"
-		echo ""
-		echo "sudo iris start ${tpchinst} quietly"
-		echo "iris session ${tpchinst} -U \"tpch\""
-		echo "do \$system.SQL.Shell()"
-		echo "reswizzle the tables - run one of the ddl scripts in /nethome/marmorri/tpch/tpchddl-*. for example..."
-                echo "run /nethome/marmorri/tpch/tpchddl-col"
-		echo "drop table TIMES"
-		echo "set selectmode odbc"
-		echo "set dialect iris"
-		echo "run ./STREAM0XX-PAR-NEW-6x.SQL"
-		echo "Note : this takes several hours and ends on statement 313."
-		echo "To get the individual run times, run this objectscript program below.  "
-		echo "s m=0,qp=\"QUERY\",sp=\" \",dt=0,x=\"\" f i=1:1 s x=\$O(^poCN.EIGc.1(x)) q:x=\"\"  s z=^poCN.EIGc.1(x),q=\$li(z,1),adt=\$li(z,3),ndt=\$ZDATETIMEH(adt,3),sdt=\$p(ndt,\",\",2) w !,qp w:qp'[\"E\" sp,(sdt-dt) w:m=1 m,sp,x,sp,adt,sp,ndt s dt=sdt,qp=q"
-	      ;;
-	    java)
-		echo "XEP-JAVA"
-		echo "javac -cp \".:intersystems-jdbc-3.2.0.jar\" joe.java"
-		echo "java -cp \".:intersystems-jdbc-3.2.0.jar\" joe"
-	      ;;
 	    sharding)
 		echo "zw \$SYSTEM.Cluster.Initialize(\"RB\",\"RB-MASTER\")"
 		echo "zw \$system.Cluster.ListNodes()"
@@ -323,33 +247,6 @@ do
 		echo "zw \$system.Sharding.Rebalance(,0,.report)"
 		echo "s ^IRIS.SM(\"rbpause\")=3"
 		echo "s ^IRIS.SM(\"rbpause\")=\"5a\""
-	      ;;
-	    populate)	
-		echo "d \$system.SQL.Shell()"
-		echo "drop table SelectivityTest.C"
-		echo "CREATE TABLE SelectivityTest.C (Sel1 INTEGER, Sel5 INTEGER, Sel10 INTEGER, Sel20 INTEGER, Sel50 INTEGER, RowNUM INTEGER, shard key (RowNUM))"
-		echo "CREATE BITMAP INDEX Sel1IDX ON TABLE SelectivityTest.C (Sel1)"
-		echo "CREATE BITMAP INDEX Sel5IDX ON TABLE SelectivityTest.C (Sel5)"
-		echo "CREATE BITMAP INDEX Sel10IDX ON TABLE SelectivityTest.C (Sel10)"
-		echo "CREATE BITMAP INDEX Sel20IDX ON TABLE SelectivityTest.C (Sel20)"
-		echo "CREATE BITMAP INDEX Sel50IDX ON TABLE SelectivityTest.C (Sel50)"
-		echo "INSERT INTO SelectivityTest.C SELECT Sel1, Sel5, Sel10, Sel20, Sel50, RowNum from %parallel SelectivityTest.TableC"
-		echo "select count(*) from SelectivityTest.C"
-		echo "TUNE TABLE SelectivityTest.C"
-		echo "drop table SelectivityTest.D"
-		echo "CREATE TABLE SelectivityTest.D (Sel1 INTEGER, Sel5 INTEGER, Sel10 INTEGER, Sel20 INTEGER, Sel50 INTEGER, RowNUM INTEGER, shard key (RowNUM))"
-		echo "CREATE BITMAP INDEX Sel1IDX ON TABLE SelectivityTest.D (Sel1)"
-		echo "CREATE BITMAP INDEX Sel5IDX ON TABLE SelectivityTest.D (Sel5)"
-		echo "CREATE BITMAP INDEX Sel10IDX ON TABLE SelectivityTest.D (Sel10)"
-		echo "CREATE BITMAP INDEX Sel20IDX ON TABLE SelectivityTest.D (Sel20)"
-		echo "CREATE BITMAP INDEX Sel50IDX ON TABLE SelectivityTest.D (Sel50)"
-		echo "INSERT INTO SelectivityTest.D SELECT Sel1, Sel5, Sel10, Sel20, Sel50, RowNum from %parallel SelectivityTest.TableD"
-		echo "select count(*) from SelectivityTest.D"
-		echo "TUNE TABLE SelectivityTest.D"
-		echo "iris session <instance> -U \"RB\""
-		echo "Do \$SYSTEM.SQL.Shell()"
-		echo "create table i (num int, shard key (num))"
-		echo "truncate table i"
 	      ;;
 	    quit)
 	      break
