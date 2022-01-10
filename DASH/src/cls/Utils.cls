@@ -10,16 +10,14 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
 		set:$e(path,*)'=separator path = path_separator
-		set DoPrepare = 1
-		set DontExplain = 0
 
 		// create a new database if requested
 		if (database'="") {
 			set variables("database") = database
-			do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-db.sql","create-db", .variables,,, .statement, DoPrepare, DontExplain)
+			do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-db.sql","create-db", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		}
 
-		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, DoPrepare, DontExplain)
+		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		
 		kill ^DashResults // in this database
 		
@@ -30,12 +28,12 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
-		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, DoPrepare, DontExplain)
+		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		set StepEnd = $zh
 		set ^DashResults($i(^DashResults)) = "Dropping existing tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		set StepStart = StepEnd
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, DoPrepare, DontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(^DashResults)) = "Creating new tables: "_$fn(StepEnd-StepStart,,2)_"s"
@@ -43,21 +41,21 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		
 		if ddl="ddl-row-id" {
 			set StepStart = StepEnd
-			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, DoPrepare, DontExplain)
+			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
 			set ^DashResults($i(^DashResults)) = "Transforming foreign keys: "_$fn(StepEnd-StepStart,,2)_"s"
 		}
 		
 		set StepStart = StepEnd
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, DoPrepare, DontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(^DashResults)) = "Creating keys: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		if useindices {
 			set StepStart = StepEnd
-			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, DoPrepare, DontExplain)
+			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
 			set ^DashResults($i(^DashResults)) = "Building indices: "_$fn(StepEnd-StepStart,,2)_"s"
@@ -65,13 +63,13 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		set StepStart = StepEnd
 		set variables("data_dir") = path_"data"_separator_scale_separator
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, DoPrepare, DontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(^DashResults)) = "Loading data: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		set StepStart = StepEnd
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, DoPrepare, DontExplain)
+		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^DashResults($i(^DashResults)) = "Tune tables: "_$fn(StepEnd-StepStart,,2)_"s"
@@ -99,10 +97,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
-	set DoPrepare = 1
-	set DontPrepare = 0
-	set DontExplain = 0
-	set DoExplain = 1
+	do ##class(%Monitor.System.LineByLine).Stop()	// turn off any concurrent MONLBL
+
 
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
@@ -113,7 +109,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		}
 		set variables("parasetting") = parasetting
 		set InvokedFromNamespace = $znspace
-		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, DoPrepare, DontExplain)
+		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 
 		kill ^DashResults // in this database
 
@@ -143,42 +139,100 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				// DASH doesn't support this BenchmarkType.
 				continue
 			}
-		
+
 			// Always do a warmup query. It is not recorded.
 			// For SQL warmups also save the explain to a file.
 			if (BenchmarkType="obj") {
 				set elapsed = 0
 				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 			} else {
-				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DoPrepare, DoExplain)
+				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 1)
 			}
 			quit:$$$ISERR(sc)
+			
+			// A MONLBL is requested by specifying 0 iterations. 
+			if ('iterations) {
+				//write !, "Namespace = ", $znspace 
+				do ##class(%Monitor.System.LineByLine).Stop()
+				set status=$SYSTEM.SQL.Util.SetOption("CachedQuerySaveSource",1,.oldval) // retain source
+
+				// set up MonLBL : use default metrics and %sqlcq* 
+				set metrics=##class(%Monitor.System.LineByLine).GetMetrics(2) // 2=all metrics
+				
+				set RoutineList = $listbuild("%sqlcq*")
+				set MetricsList = $listfromstring(metrics)
+				//set status=##class(%Monitor.System.LineByLine).Start(RoutineList, "") /* default metrics */
+				set status=##class(%Monitor.System.LineByLine).Start(RoutineList,MetricsList)
+				set RoutineCount=##class(%Monitor.System.LineByLine).GetRoutineCount()
+				write:verbose !,"MONLBL : monitoring ", $listlength(MetricsList), " metrics for ",RoutineCount, " %sqlcq* routines"
+				set metrics=##class(%Monitor.System.LineByLine).GetMetrics(1) // 1=monitored 
+				set elements=$length(metrics,",")
+
+				//write:verbose !,"MONLBL : executing RunSQL"
+				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare As %Boolean : */ 0, /* DoExplain As %Boolean : */ 0)
+
+				// pause MonLBL		
+				do ##class(%Monitor.System.LineByLine).Pause()
+
+				for MonitoredRoutine = 1:1:RoutineCount {
+					// get MonLBL output for all routines
+					set RoutineName=##class(%Monitor.System.LineByLine).GetRoutineName(MonitoredRoutine)
+					
+					set rset=##class(%ResultSet).%New("%Monitor.System.LineByLine:Result")
+					do rset.%Execute(RoutineName)
+					
+					set line = 1
+					while rset.%Next() {
+						if (line = 1) { 
+							write:verbose !,"RoutineName = ", RoutineName, !
+							write "Line"
+							for field=1:1:elements {
+								write ",",$piece(metrics,",",field)
+							}
+						}
+						set row=rset.GetData(1)
+						
+						write !,line 
+						for field=1:1:elements {
+							write ",",$list(row,field)
+						}
+						do $INCREMENT(line)
+					}
+					kill rset
+				
+					// ToDo -- Which directory to output MONLBL results? /tmp? <unique? filename?>.csv
+				}
+
+				do ##class(%Monitor.System.LineByLine).Stop()
+
+			}
 
 			if '$DATA(^Indices.Global) {set ^Indices.Global = ""}
 			if '$DATA(^DDL.Global) {set ^DDL.Global = ""}
 			if '$DATA(^Scale.Global) {set ^Scale.Global = ""}
 			if (parasetting = "") {set parasetting = "autoparallel"}
 
-			for j = 1:1:iterations {
+			if iterations {
+				for j = 1:1:iterations {
 				
-				if (BenchmarkType="obj") {
-					set elapsed = 0
-					set StepStart = $zh
-					set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
-					set StepEnd = $zh
-					if elapsed > 0 {
-						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^Scale.Global
+					if (BenchmarkType="obj") {
+						set elapsed = 0
+						set StepStart = $zh
+						set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
+						set StepEnd = $zh
+						if elapsed > 0 {
+							set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^Scale.Global
+						} else {
+							set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+						}
 					} else {
+						set StepStart = $zh
+						set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare : */ 0, /* DoExplain As %Boolean : */ 0)
+						set StepEnd = $zh
 						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
-					}
-				} else {
-					set StepStart = $zh
-					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, DontPrepare, DontExplain)
-					set StepEnd = $zh
-					set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
-				}				
-				quit:$$$ISERR(sc)
-		
+					}				
+					quit:$$$ISERR(sc)
+				}
 			}
 		
         }
@@ -192,7 +246,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			//}
 		//CLOSE myfile
 
-		if verbose {
+		if (verbose & iterations) {
 			write !, "server, para, indices, organization, query, run time, build, scale"
 			for i = 1:1:^DashResults {
 				write !, ^DashResults(i)
@@ -254,8 +308,8 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 					set SQL(1) = $replace(SQL(1),"${"_str_"}",rep)
 				}
 
-				set SQL(1) = $zstrip(SQL(1),"<>WC"), ts = $zh
-				//write !,"SQL read from file : ", SQL(1)
+				set SQL(1) = $zstrip(SQL(1),"<>WC")
+				set ts = $zh
 
 				if ($find(SQL(1), "VIEW") || $find(SQL(1), "view")) { 
 					// TO DO add error handling
@@ -267,9 +321,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 					kill DDLstatement
 					set SQL(1) = ""
 				} else {
-					//write !, "About to check if Explain flag is set"
-					if (DoExplain)
-					{
+					if (DoExplain) {
 						set SaveSQL = SQL(1)
 						set SQL(1) = "explain "_SaveSQL
 						write:verbose !,"Explaining statement : ",SQL(1)
@@ -278,8 +330,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						set rs = statement.%Prepare(.SQL)
 						//write:verbose !,"After prepare : "
 
-						if ($System.Status.IsError(rs)) 
-						{
+						if ($System.Status.IsError(rs)) {
 							write:verbose !,"FAILED : ",rs,!
 							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error preparing explain of statement: "_rs)
@@ -309,12 +360,10 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						set SQL(1) = SaveSQL
 					}
 				
-					if (DoPrepare)
-					{
+					if (DoPrepare) {
 						write:verbose !,"Preparing statement : ",SQL(1)
 						set rs = statement.%Prepare(.SQL)
-						if ($System.Status.IsError(rs)) 
-						{
+						if ($System.Status.IsError(rs)) {
 							write:verbose !,"FAILED : ",rs
 							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error preparing statement: "_rs)
@@ -322,7 +371,8 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 							}
 						}
 						
-					}
+					}					
+
 					write:verbose !,"Executing statement : ",SQL(1)
 					set rs = statement.%Execute()
 					if (rs.%SQLCODE'=0) & (rs.%SQLCODE'=100) {
@@ -332,8 +382,9 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 							Return sc
 						}
 					} 
-					// area for improvement. do I keep saving results files over on top of each other? Or do I only save the warmup results?
-					// if so, how to I ensure that the performance run results are displayed in the most efficient null way possible?
+
+					// ToDo: Decide whether to save all query results in files or only warmup results. Append or overwrite?
+					// For some queries, execution is deferred until the Display occurs.
 					do rs.%DisplayFormatted("CSV",ResultSetFile)				
 					if (rs.%SQLCODE'=0) & (rs.%SQLCODE'=100) {
 						write:verbose !,"FAILED: ",rs.%Message
@@ -346,12 +397,13 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						write:verbose&&rs.%ROWCOUNT rs.%ROWCOUNT," rows affected"
 					}
 
+					
+
 					set SQL(1) = ""
 				}
 
-			} else {
-				// this is adding CR LF 
-				set SQL(1) = SQL(1)_$c(13,10)_line
+			} else {				
+				set SQL(1) = SQL(1)_$c(13,10)_line     // Add CR LF 
 			}
 
         }
@@ -372,8 +424,7 @@ ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As
 {
     write !, "RunObjScr ", file
 	set sc = $$$OK
-    try {
-        
+    try {        
         do $SYSTEM.OBJ.Load(file,"cuk")  
 		//write !,"before executing micro from file : "_file
         set elapsed = ##class(DASH.Benchmark).micro()
@@ -394,11 +445,11 @@ ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As
 
 }
 
-
-
 ClassMethod Tune() As %Integer [ Language = objectscript ]
 {
-	zn "%SYS"
+	set InvokedFromNamespace = $znspace
+
+	set $namespace = "%SYS"
 	s Obj=##Class(Config.config).Open()
 	s Obj.MaxServers=64
 	s Obj.MaxServerConn=64
@@ -408,6 +459,8 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 	s Obj.routines=1020
 	s Obj.LargePagesRequired=1
 	s Status=Obj.%Save()
+
+	set $namespace =  InvokedFromNamespace
 
 	quit $$$OK
 }
