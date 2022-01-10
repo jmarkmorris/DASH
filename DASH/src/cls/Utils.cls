@@ -21,10 +21,10 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		
 		kill ^DashResults // in this database
 		
-		set ^Schema.Global = schema  // Why do we need schema?
+		set ^Schema.Global = schema  // How is schema used?
 		set ^Scale.Global = scale
 		set ^DDL.Global = ddl
-		if useindices {set ^Indices.Global = "INDICES"} else {set ^Indices.Global = "NO INDICES"}
+		set ^Indices.Global = $SELECT(useindices:"INDICES", 'useindices:"NO INDICES")
 
 		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
@@ -74,7 +74,6 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set StepEnd = $zh
 		set ^DashResults($i(^DashResults)) = "Tune tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
-
 		if verbose {
 			write !,"Total time spent: "_$fn(StepEnd-SequenceStart,,2)_"s"
 			for i = 1:1:^DashResults {
@@ -99,14 +98,12 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	set statement.%SelectMode = 1 // 1=ODBC
 	do ##class(%Monitor.System.LineByLine).Stop()	// turn off any concurrent MONLBL
 
-
 	try {
 		set separator = $s($$$isWINDOWS:"\",1:"/")
 		set:$e(path,*)'=separator path = path_separator
 
-		if (database'="") {
-			set variables("database") = database
-		}
+		set:(database'="") variables("database") = database
+
 		set variables("parasetting") = parasetting
 		set InvokedFromNamespace = $znspace
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
@@ -145,7 +142,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			if (BenchmarkType="obj") {
 				set elapsed = 0
 				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
-			} else {
+			} else { // BenchmarkType = "sql"
 				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 1)
 			}
 			quit:$$$ISERR(sc)
@@ -207,10 +204,10 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 			}
 
-			if '$DATA(^Indices.Global) {set ^Indices.Global = ""}
-			if '$DATA(^DDL.Global) {set ^DDL.Global = ""}
-			if '$DATA(^Scale.Global) {set ^Scale.Global = ""}
-			if (parasetting = "") {set parasetting = "autoparallel"}
+			set:'$DATA(^Indices.Global) ^Indices.Global = ""
+			set:'$DATA(^DDL.Global) ^DDL.Global = ""
+			set:'$DATA(^Scale.Global) ^Scale.Global = ""
+			set:(parasetting = "") parasetting = "autoparallel"
 
 			if iterations {
 				for j = 1:1:iterations {
@@ -335,7 +332,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error preparing explain of statement: "_rs)
 								write:verbose !,"Error preparing explain of statement. Returning.: "
-								Return sc
+								return sc
 							}
 						}
 						//write:verbose !,"Before execute : "
@@ -346,7 +343,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 							write:verbose !,"FAILED : ",rs.%Message
 							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error running explain of statement: "_rs.%Message)
-								Return sc
+								return sc
 							}
 						} 
 						do rs.%DisplayFormatted("CSV","explain"_ResultSetFile)				
@@ -354,7 +351,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 							write:verbose !,"FAILED: ",rs.%Message
 							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error displaying statement: "_rs.%Message)
-								Return sc
+								return sc
 							}
 						}
 						set SQL(1) = SaveSQL
@@ -367,7 +364,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 							write:verbose !,"FAILED : ",rs
 							if 'IgnoreErrors {
 								set sc = $$$ERROR($$$GeneralError, "Error preparing statement: "_rs)
-								Return sc
+								return sc
 							}
 						}
 						
@@ -379,7 +376,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						write:verbose !,"FAILED : ",rs.%Message
 						if 'IgnoreErrors {
 							set sc = $$$ERROR($$$GeneralError, "Error running statement: "_rs.%Message)
-							Return sc
+							return sc
 						}
 					} 
 
@@ -390,14 +387,12 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						write:verbose !,"FAILED: ",rs.%Message
 						if 'IgnoreErrors {
 							set sc = $$$ERROR($$$GeneralError, "Error displaying statement: "_rs.%Message)
-							Return sc
+							return sc
 						}
 					} else {
 						write:verbose !,"SUCCESS (",$normalize($zh-ts,3),"s) " 
 						write:verbose&&rs.%ROWCOUNT rs.%ROWCOUNT," rows affected"
 					}
-
-					
 
 					set SQL(1) = ""
 				}
@@ -459,6 +454,7 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 	s Obj.routines=1020
 	s Obj.LargePagesRequired=1
 	s Status=Obj.%Save()
+	set status=$SYSTEM.SQL.Util.SetOption("CachedQuerySaveSource",1,.oldval) // retain source
 
 	set $namespace =  InvokedFromNamespace
 

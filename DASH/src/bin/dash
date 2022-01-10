@@ -7,6 +7,7 @@ do
     echo "Do \$SYSTEM.SQL.Shell()"
 	echo "set selectmode odbc"
 	echo "set dialect iris"
+	echo "ObjectScript terminal tips — :s (SQL shell), :h (history), :<num> (recall command), CTRL-r (search), :alias <name> <text>, :? (help), ! or $ (OS shell)"
 	echo "---------------------------"
 	case $topic in
 	    alerts)
