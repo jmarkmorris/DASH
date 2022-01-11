@@ -158,8 +158,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				
 				set RoutineList = $listbuild("%sqlcq*")
 				set MetricsList = $listfromstring(metrics)
-				// set status=##class(%Monitor.System.LineByLine).Start(RoutineList, "") /* default metrics */
-				set status=##class(%Monitor.System.LineByLine).Start(RoutineList,MetricsList)
+				set status=##class(%Monitor.System.LineByLine).Start(RoutineList, "") /* default metrics */
+				// set status=##class(%Monitor.System.LineByLine).Start(RoutineList,MetricsList)
 				set RoutineCount=##class(%Monitor.System.LineByLine).GetRoutineCount()
 				write:verbose !,"MONLBL : monitoring ", $listlength(MetricsList), " metrics for ",RoutineCount, " %sqlcq* routines"
 				set metrics=##class(%Monitor.System.LineByLine).GetMetrics(1) // 1=monitored 
@@ -181,22 +181,26 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 					set line = 1
 					while rset.%Next() {
 						if (line = 1) { 
-							write:verbose !,"RoutineName = ", RoutineName, !
+							write:verbose !!,"RoutineName = ", RoutineName, !
 							write "Line"
 							for field=1:1:elements {
-								write ",",$piece(metrics,",",field)
+								// write ",",$piece(metrics,",",field)  // use this for detailed output
+								write ?(12*field),$piece(metrics,",",field)
 							}
+							write ?(12*(elements + 1)), "Source line"
 						}
 						set row=rset.GetData(1)
 						
 						write !,line 
 						for field=1:1:elements {
-							write ",",$list(row,field)
+							// write ",",$list(row,field) // send detailed output to persistent store (file, then IRIS)
+							write ?(12*field),$list(row,field)
 						}
 
 						set atom="+"_line_"^"_RoutineName
 						//write !, "atom =", atom
-						write ",", $text(@atom)
+						// write ",", $text(@atom)   // use this for detailed csv output
+						write ?(12*(elements + 1)), $text(@atom)
 
 						do $INCREMENT(line)
 					}
