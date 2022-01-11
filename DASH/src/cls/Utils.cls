@@ -158,8 +158,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				
 				set RoutineList = $listbuild("%sqlcq*")
 				set MetricsList = $listfromstring(metrics)
-				set status=##class(%Monitor.System.LineByLine).Start(RoutineList, "") /* default metrics */
-				// set status=##class(%Monitor.System.LineByLine).Start(RoutineList,MetricsList)
+				// set status=##class(%Monitor.System.LineByLine).Start(RoutineList, "") /* default metrics */
+				set status=##class(%Monitor.System.LineByLine).Start(RoutineList,MetricsList)
 				set RoutineCount=##class(%Monitor.System.LineByLine).GetRoutineCount()
 				write:verbose !,"MONLBL : monitoring ", $listlength(MetricsList), " metrics for ",RoutineCount, " %sqlcq* routines"
 				set metrics=##class(%Monitor.System.LineByLine).GetMetrics(1) // 1=monitored 
@@ -168,47 +168,75 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				//write:verbose !,"MONLBL : executing RunSQL"
 				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare As %Boolean : */ 0, /* DoExplain As %Boolean : */ 0)
 
-				// pause MonLBL		
 				do ##class(%Monitor.System.LineByLine).Pause()
 
 				for MonitoredRoutine = 1:1:RoutineCount {
 					// get MonLBL output for all routines
 					set RoutineName=##class(%Monitor.System.LineByLine).GetRoutineName(MonitoredRoutine)
 					
-					set rset=##class(%ResultSet).%New("%Monitor.System.LineByLine:Result")
-					do rset.%Execute(RoutineName)
+					set MonitorResults=##class(%ResultSet).%New("%Monitor.System.LineByLine:Result")
+					do MonitorResults.%Execute(RoutineName)
 					
+					// Display a formatted limited set of metrics.  Line,RtnLine,Time,TotalTime,SourceLine
 					set line = 1
-					while rset.%Next() {
+					set DetailFile = ""
+					while MonitorResults.%Next() {
 						if (line = 1) { 
-							write:verbose !!,"RoutineName = ", RoutineName, !
-							write "Line"
+
+							// Create file to store detailed MONLBL output
+							set DetailFile = QueryID_RoutineName_".lbl"
+							set SummaryFile = QueryID_RoutineName_".txt"
+							//write:verbose !,"DetailFile = ", DetailFile
+							OPEN DetailFile :("WNS"):10
+							OPEN SummaryFile :("WNS"):10
+
+							USE 0 write !!,"RoutineName = ", RoutineName, !
+							USE SummaryFile write !!,"RoutineName = ", RoutineName, !
+							USE DetailFile write !!,"RoutineName = ", RoutineName, !
+							USE 0 write "Line"
+							USE SummaryFile write "Line"
+							USE DetailFile write "Line"
+							set DisplayedField = 1
 							for field=1:1:elements {
-								// write ",",$piece(metrics,",",field)  // use this for detailed output
-								write ?(12*field),$piece(metrics,",",field)
+								USE DetailFile write ",",$piece(metrics,",",field)
+								// if field is in the set {RtnLine, Time, TotalTime} then write to terminal
+								if ($MATCH($piece(metrics,",",field), "RtnLine") || $MATCH($piece(metrics,",",field), "Time") || $MATCH($piece(metrics,",",field), "TotalTime")) {
+									USE 0 write ?(12*DisplayedField),$piece(metrics,",",field)
+									USE SummaryFile write ?(12*DisplayedField),$piece(metrics,",",field)
+									do $INCREMENT(DisplayedField)
+								}
 							}
-							write ?(12*(elements + 1)), "Source line"
+							USE 0 write ?(12*(DisplayedField)), "SourceLine"
+							USE SummaryFile write ?(12*(DisplayedField)), "SourceLine"
+							USE DetailFile write ",", "SourceLine"
 						}
-						set row=rset.GetData(1)
+						set row=MonitorResults.GetData(1)
 						
-						write !,line 
+						USE 0 write !,line
+						USE SummaryFile write !,line
+						USE DetailFile write !,line
+						set DisplayedField = 1
 						for field=1:1:elements {
-							// write ",",$list(row,field) // send detailed output to persistent store (file, then IRIS)
-							write ?(12*field),$list(row,field)
+							USE DetailFile write ",",$list(row,field)
+							if ($MATCH($piece(metrics,",",field), "RtnLine") || $MATCH($piece(metrics,",",field), "Time") || $MATCH($piece(metrics,",",field), "TotalTime")) {
+								USE 0 write ?(12*DisplayedField),$list(row,field)
+								USE SummaryFile write ?(12*DisplayedField),$list(row,field)
+								do $INCREMENT(DisplayedField)
+							}
 						}
 
 						set atom="+"_line_"^"_RoutineName
-						//write !, "atom =", atom
-						// write ",", $text(@atom)   // use this for detailed csv output
-						write ?(12*(elements + 1)), $text(@atom)
+						USE 0 write ?(12*(DisplayedField)), $text(@atom)
+						USE SummaryFile write ?(12*(DisplayedField)), $text(@atom)
+						USE DetailFile write ",",$text(@atom)
 
 						do $INCREMENT(line)
 					}
-					kill rset
-
-					// ToDo -- Display a formatted limited set of metrics.  Line,Glorefs???,RtnLine,Time,TotalTime,Source
-					// ToDo -- Display a detailed csv set of metrics. Well, we already have that.
-					// ToDo -- Stage MONLBL results in the same place where the explains are written.
+					if (DetailFile '= "") {
+							CLOSE DetailFile
+							CLOSE SummaryFile
+					}
+					kill MonitorResults
 				}
 
 				do ##class(%Monitor.System.LineByLine).Stop()
@@ -448,7 +476,6 @@ ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As
 
 	write:verbose !
     quit sc
-
 }
 
 ClassMethod Tune() As %Integer [ Language = objectscript ]
