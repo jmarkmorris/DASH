@@ -1,0 +1,7 @@
+{
+    "objectscript.conn": {
+        "server": "colobench12",
+        "ns": "USER",
+        "active": true
+    }
+}
