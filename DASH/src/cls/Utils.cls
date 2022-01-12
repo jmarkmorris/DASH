@@ -1,7 +1,7 @@
 Class DASH.Utils
 {
 
-ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "100", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1) As %Status [ SqlName = Load, SqlProc ]
+ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1) As %Status [ SqlName = Load, SqlProc ]
 {
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
@@ -91,7 +91,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	quit sc
 }
 
-ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "all", iterations As %String = "5", verbose As %Boolean = 1) As %Status
+ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "Q*", iterations As %String = "5", verbose As %Boolean = 1) As %Status
 {
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
