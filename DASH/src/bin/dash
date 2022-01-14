@@ -29,7 +29,7 @@ do
 		echo ""
 		echo "select build series"
 		
-		select buildstream in quit 2019.1.2 2020.1.0 2021.1.0 2021.2.0 2021.3.0SQL 2022.2.0VEC 2022.2.0SQL 2022.2.0L
+		select buildstream in quit 2019.1.2 2020.1.0 2020.4.0SQLSQM 2021.1.0 2021.2.0 2021.3.0SQL 2022.2.0VEC 2022.2.0SQL 2022.2.0L
 		do
 			case $buildstream in
 			2019.1.2)
@@ -38,6 +38,9 @@ do
 			2020.1.0)
 				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
 				;;
+			2020.4.0SQLSQM)
+ 				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+			;;
 			2021.1.0)
 				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
 				;;
@@ -116,8 +119,7 @@ do
 					echo "iris session ${IRISINSTNAME}"
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 					echo "do ##class(DASH.Utils).Tune()"
-					echo "exit IRIS session (h<RETURN>)"
-					echo "sudo iris stop ${IRISINSTNAME} restart quietly"
+					echo "The Tune() method will issue an IRIS restart."
 					;;
 				esac
 			done

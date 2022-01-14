@@ -461,7 +461,9 @@ ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As
     try {        
         do $SYSTEM.OBJ.Load(file,"cuk")  
 		//write !,"before executing micro from file : "_file
-        set elapsed = ##class(DASH.Benchmark).micro()
+        //set elapsed = ##class(DASH.Benchmark).micro()
+		set elapsed = $CLASSMETHOD("DASH.Benchmark","micro")
+		
         //write !,"after executing micro"
 		do $SYSTEM.OBJ.Delete("DASH.Benchmark") 
 
@@ -483,7 +485,8 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 	set InvokedFromNamespace = $znspace
 
 	set $namespace = "%SYS"
-	s Obj=##Class(Config.config).Open()
+	//s Obj=##Class(Config.config).Open() // ObjectScript Language Server flags errors.
+	s Obj= $CLASSMETHOD("Config.config","Open")  // Using $CLASSMETHOD prevents the ObjectScript Language Server from flagging errors.
 	s Obj.MaxServers=64
 	s Obj.MaxServerConn=64
 	s Obj.globals8kb=193058
@@ -495,6 +498,12 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 	set status=$SYSTEM.SQL.Util.SetOption("CachedQuerySaveSource",1,.oldval) // retain source
 
 	set $namespace =  InvokedFromNamespace
+
+	// Restart iris. This is not exactly graceful, but it gets the job done.
+	write !, "Performing restart", !
+	set InstanceName = ##class(%SYS.System).GetInstanceName()
+	set sc = $ZF(-100,"", "sudo", "/usr/bin/iris", "stop", InstanceName, "restart", "quietly")
+
 
 	quit $$$OK
 }
