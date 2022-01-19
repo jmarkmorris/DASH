@@ -78,9 +78,11 @@ do
 					echo "irissrcdir = ${IRISSRCDIR}"
 					kitstatus=`curl https://turbo.iscinternal.com/prodlog/releng/api/kits/${build} 2>/dev/null | sed -e "s/^.*kitstatus/kitstatus/" | sed -e "s/,\"name.*//"`
 					echo ${kitstatus}
-					echo "Enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+					echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 					read repo
-					echo "Enter instance name : (type return to choose again)"
+					repo=${repo:-/nethome/marmorri/DASH}
+					echo "repo : ${repo}"
+					echo -n "Enter instance name : (type return to choose again)"
 					read IRISINSTNAME
 					if [ -z ${IRISINSTNAME} ]
 					then
@@ -127,7 +129,7 @@ do
 	      ;;
 	    MONLBL)
 		echo "DASH benchmarks perform a MONLBL if the iteration count is specified as 0, e.g.,"
-		echo "do ##class(DASH.Utils).Run(\"/nethome/marmorri/DASH-master/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"0\")"
+		echo "do ##class(DASH.Utils).Run(\"/nethome/marmorri/DASH/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"0\")"
 		  ;;
 		oldMONLBL)
 		echo "Steps to perform a MONLBL manually :"
@@ -164,7 +166,7 @@ do
 		      break
 		      ;;
 		    *) 
-		      cat /nethome/marmorri/benchmark/TPCH/src/sql/queries/$query
+		      cat /nethome/marmorri/DASH/TPCH/src/sql/queries/$query
 		      ;;
 	            esac
 		done
@@ -172,10 +174,12 @@ do
 	      ;;
 	    tpch)
 		echo "clone the DASH repo from GitHub"
-		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
+		repo=${repo:-/nethome/marmorri/DASH}
+		echo "repo : ${repo}"
 		echo "install the instance"
-		echo "enter instance name : "
+		echo -n "enter instance name : "
         read tpchinst
 		echo "iris session ${tpchinst}"
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
@@ -201,16 +205,20 @@ do
 	      ;;
 	    micro)
 		echo "clone the DASH repo from GitHub"
-		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
+		repo=${repo:-/nethome/marmorri/DASH}
+		echo "repo : ${repo}"
 		echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"all\",\"5\")"
 	      ;;
 	    NYTaxi)
 		echo "clone the DASH repo from GitHub"
-		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
+		repo=${repo:-/nethome/marmorri/DASH}
+		echo "repo : ${repo}"
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-coltable\")"
@@ -226,8 +234,10 @@ do
 		;;
 	    selectivity)
 		echo "clone the DASH repo from GitHub"
-		echo "enter directory for local repo copy (e.g., /nethome/marmorri/DASH-master)"
+		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
+		repo=${repo:-/nethome/marmorri/DASH}
+		echo "repo : ${repo}"
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-coltable\")"

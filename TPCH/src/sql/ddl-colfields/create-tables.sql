@@ -7,12 +7,12 @@
 CREATE TABLE ${schema}NATION  ( N_NATIONKEY  INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
                             N_NAME       CHAR(25) NOT NULL WITH STORAGETYPE = COLUMNAR,
                             N_REGIONKEY  INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
-                            N_COMMENT    VARCHAR(152))
+                            N_COMMENT    VARCHAR(152) ${shardkey})
 ;
 
 CREATE TABLE ${schema}REGION  ( R_REGIONKEY  INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
                             R_NAME       CHAR(25) NOT NULL WITH STORAGETYPE = COLUMNAR,
-                            R_COMMENT    VARCHAR(152))
+                            R_COMMENT    VARCHAR(152) ${shardkey})
 ;
 
 CREATE TABLE ${schema}PART  ( P_PARTKEY     INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
@@ -23,7 +23,7 @@ CREATE TABLE ${schema}PART  ( P_PARTKEY     INTEGER NOT NULL WITH STORAGETYPE = 
                           P_SIZE        INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
                           P_CONTAINER   CHAR(10) NOT NULL WITH STORAGETYPE = COLUMNAR,
                           P_RETAILPRICE DECIMAL(15,2) NOT NULL WITH STORAGETYPE = COLUMNAR,
-                          P_COMMENT     VARCHAR(23) NOT NULL )
+                          P_COMMENT     VARCHAR(23) NOT NULL ${shardkey})
 ;
 
 CREATE TABLE ${schema}SUPPLIER ( S_SUPPKEY     INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
@@ -32,14 +32,14 @@ CREATE TABLE ${schema}SUPPLIER ( S_SUPPKEY     INTEGER NOT NULL WITH STORAGETYPE
                              S_NATIONKEY   INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
                              S_PHONE       CHAR(15) NOT NULL WITH STORAGETYPE = COLUMNAR,
                              S_ACCTBAL     DECIMAL(15,2) NOT NULL WITH STORAGETYPE = COLUMNAR,
-                             S_COMMENT     VARCHAR(101) NOT NULL)
+                             S_COMMENT     VARCHAR(101) NOT NULL ${shardkey})
 ;
 
 CREATE TABLE ${schema}PARTSUPP ( PS_PARTKEY     INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
                              PS_SUPPKEY     INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
                              PS_AVAILQTY    INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
                              PS_SUPPLYCOST  DECIMAL(15,2)  NOT NULL WITH STORAGETYPE = COLUMNAR,
-                             PS_COMMENT     VARCHAR(199) NOT NULL )
+                             PS_COMMENT     VARCHAR(199) NOT NULL  ${shardkey})
 ;
 
 CREATE TABLE ${schema}CUSTOMER ( C_CUSTKEY     INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
@@ -49,7 +49,7 @@ CREATE TABLE ${schema}CUSTOMER ( C_CUSTKEY     INTEGER NOT NULL WITH STORAGETYPE
                              C_PHONE       CHAR(15) NOT NULL WITH STORAGETYPE = COLUMNAR,
                              C_ACCTBAL     DECIMAL(15,2)   NOT NULL WITH STORAGETYPE = COLUMNAR,
                              C_MKTSEGMENT  CHAR(10) NOT NULL WITH STORAGETYPE = COLUMNAR,
-                             C_COMMENT     VARCHAR(117) NOT NULL)
+                             C_COMMENT     VARCHAR(117) NOT NULL ${shardkey})
 ;
 
 CREATE TABLE ${schema}ORDERS  ( O_ORDERKEY       INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
@@ -60,7 +60,7 @@ CREATE TABLE ${schema}ORDERS  ( O_ORDERKEY       INTEGER NOT NULL WITH STORAGETY
                            O_ORDERPRIORITY  CHAR(15) NOT NULL WITH STORAGETYPE = COLUMNAR,  
                            O_CLERK          CHAR(15) NOT NULL WITH STORAGETYPE = COLUMNAR, 
                            O_SHIPPRIORITY   INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
-                           O_COMMENT        VARCHAR(79) NOT NULL)
+                           O_COMMENT        VARCHAR(79) NOT NULL ${shardkey})
 ;
 
 CREATE TABLE ${schema}LINEITEM ( L_ORDERKEY    INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
@@ -78,6 +78,6 @@ CREATE TABLE ${schema}LINEITEM ( L_ORDERKEY    INTEGER NOT NULL WITH STORAGETYPE
                              L_RECEIPTDATE DATE NOT NULL WITH STORAGETYPE = COLUMNAR,
                              L_SHIPINSTRUCT CHAR(25) NOT NULL WITH STORAGETYPE = COLUMNAR,
                              L_SHIPMODE     CHAR(10) NOT NULL WITH STORAGETYPE = COLUMNAR,
-                             L_COMMENT      VARCHAR(44) NOT NULL)
+                             L_COMMENT      VARCHAR(44) NOT NULL ${shardkey})
 ;
 

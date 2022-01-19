@@ -1,7 +1,7 @@
 Class DASH.Utils
 {
 
-ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1) As %Status [ SqlName = Load, SqlProc ]
+ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1, shardkey As %String = "") As %Status [ SqlName = Load, SqlProc ]
 {
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
@@ -33,6 +33,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set ^DashResults($i(^DashResults)) = "Dropping existing tables: "_$fn(StepEnd-StepStart,,2)_"s"
 
 		set StepStart = StepEnd
+		set variables("shardkey") = $s(shardkey="":"", 1:", shard key("_shardkey_")")
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
