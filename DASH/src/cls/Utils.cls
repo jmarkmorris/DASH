@@ -126,7 +126,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
     	while ResultSet.%Next() {
         	set QueryID = ResultSet.%Get("ItemName")
 
-			// Need to handle variable extensions here.
+			// Handle variable extensions here.
 			if $FIND(QueryID,".sql") {
 				set QueryID = $REPLACE(QueryID,".sql","")
 				set BenchmarkType = "sql"
@@ -266,7 +266,11 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						set StepStart = $zh
 						set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare : */ 0, /* DoExplain As %Boolean : */ 0)
 						set StepEnd = $zh
-						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+						set QueryDescriptor = QueryID
+						if (database = "SelectivityTest") {
+								set QueryDescriptor = $REPLACE(QueryID,"-",",",3)  // Remove the "Q- and convert the other "-" to ","
+						}
+						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryDescriptor_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 					}				
 					quit:$$$ISERR(sc)
 				}
@@ -501,7 +505,7 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 	set $namespace =  InvokedFromNamespace
 
 	// Restart iris. This is not exactly graceful, but it gets the job done.
-	write !, "Performing restart", !
+	write !, "Performing restart. A warning message will emit, followed by a delay, and then an OS prompt", !
 	set InstanceName = ##class(%SYS.System).GetInstanceName()
 	set sc = $ZF(-100,"", "sudo", "/usr/bin/iris", "stop", InstanceName, "restart", "quietly")
 

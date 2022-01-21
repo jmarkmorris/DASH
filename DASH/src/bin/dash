@@ -2,8 +2,8 @@ PS3="Enter your choice : "
 
 select topic in quit cololist install tpch tpchq NYTaxi micro selectivity MONLBL SQL sharding rtpc shd
 do
-	echo "These processes are used frequently on the colobench servers. They may not work on laptops."
-	echo "Frequently used :"
+	echo "DASH is frequently utilized on high performance servers. These processes may not work on laptops."
+	echo "Frequently used commands:"
     echo "Do \$SYSTEM.SQL.Shell()"
 	echo "set selectmode odbc"
 	echo "set dialect iris"
@@ -78,11 +78,11 @@ do
 					echo "irissrcdir = ${IRISSRCDIR}"
 					kitstatus=`curl https://turbo.iscinternal.com/prodlog/releng/api/kits/${build} 2>/dev/null | sed -e "s/^.*kitstatus/kitstatus/" | sed -e "s/,\"name.*//"`
 					echo ${kitstatus}
-					echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
+					echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH] : "
 					read repo
 					repo=${repo:-/nethome/marmorri/DASH}
 					echo "repo : ${repo}"
-					echo -n "Enter instance name : (type return to choose again)"
+					echo -n "Enter instance name : (type return to choose again) : "
 					read IRISINSTNAME
 					if [ -z ${IRISINSTNAME} ]
 					then
