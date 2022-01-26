@@ -14,7 +14,35 @@ do
 		/nethome/marmorri/bin/markoalert.sh
 	      ;;
 	    cololist)
-		/nethome/marmorri/bin/mylist_pbcluster.sh
+			for i in 1 2 3 4 5 6 7 8 9 10 11 12
+			do
+				echo colobench$i:
+				ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-"
+				#ssh colobench${i} sudo free -g
+			done
+			echo
+			echo "Instances that are up:"
+			for i in 1 2 3 4 5 6 7 8 9 10 11 12
+			do
+				irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-" | egrep -v "^dn"`
+				if [ "${irisallw}" ]
+							then
+					echo "colobench${i} : ${irisallw}"
+				fi
+
+			done
+			echo -n "Enter instance name : "
+			read IRISINSTNAME
+			echo "SMP urls :"
+			for i in 1 2 3 4 5 6 7 8 9 10 11 12
+			do
+				irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-" | egrep -v "^dn"`
+				if [ "${irisallw}" ]
+							then
+					SMPport=`ssh colobench${i} iris list ${IRISINSTNAME} | egrep WebServer | sed -e "s/^.*WebServer = //" | sed -e "s/.$//"`
+					echo "http://colobench${i}:${SMPport}/csp/sys/%25CSP.Portal.Home.zen?"
+				fi
+			done
 	      ;;
 	    shd)
 		/nethome/marmorri/bin/myshd

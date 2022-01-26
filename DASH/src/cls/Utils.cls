@@ -288,7 +288,11 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		//CLOSE myfile
 
 		if (verbose & iterations) {
-			write !, "server, para, indices, organization, query, run time, build, scale"
+			if (database = "SelectivityTest") {
+				write !, "server, para, indices, organization, x, y, z, run time, build, scale"
+			} else {
+				write !, "server, para, indices, organization, query, run time, build, scale"
+			}
 			for i = 1:1:^DashResults {
 				write !, ^DashResults(i)
 				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^Indices.Global_",,",^DashResults(i),",",$zv
@@ -512,5 +516,6 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 
 	quit $$$OK
 }
+
 
 }
