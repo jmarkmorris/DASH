@@ -1,6 +1,6 @@
 PS3="Enter your choice : "
 
-select topic in quit cololist install tpch tpchq NYTaxi micro selectivity MONLBL SQL sharding rtpc shd
+select topic in quit cololist colostop install tpch tpchq NYTaxi micro selectivity MONLBL SQL sharding rtpc shd
 do
 	echo "DASH is frequently utilized on high performance servers. These processes may not work on laptops."
 	echo "Frequently used commands:"
@@ -11,8 +11,28 @@ do
 	echo "---------------------------"
 	case $topic in
 	    alerts)
-		/nethome/marmorri/bin/markoalert.sh
+			/nethome/marmorri/bin/markoalert.sh
 	      ;;
+		colostop)
+			echo -n "Enter instance name : (type return to choose again) : "
+			read IRISINSTNAME
+			if [ -z ${IRISINSTNAME} ]
+			then
+				continue
+			fi
+			echo "Issuing an iris stop ${IRISINSTNAME}."
+			for i in 1 2 3 4 5 6 7 8 9 10 11 12
+			do
+				echo colobench$i:
+				rc=`ssh colobench${i} sudo iris list ${IRISINSTNAME} 2>/dev/null`
+				if [ -z ${rc} ]
+				then
+					continue
+				fi
+				ssh colobench${i} sudo iris stop ${IRISINSTNAME} quietly
+			done
+	      ;;
+
 	    cololist)
 			for i in 1 2 3 4 5 6 7 8 9 10 11 12
 			do
@@ -33,6 +53,11 @@ do
 			done
 			echo -n "Enter instance name : "
 			read IRISINSTNAME
+			if [ -z ${IRISINSTNAME} ]
+			then
+				continue
+			fi
+
 			echo "SMP urls :"
 			for i in 1 2 3 4 5 6 7 8 9 10 11 12
 			do
@@ -116,8 +141,14 @@ do
 					then
 						continue
 					fi
-					echo "Issuing an iris stop ${IRISINSTNAME}. Ignore error if it does not exist"
-					sudo iris stop ${IRISINSTNAME} quietly
+					
+					echo "Issuing an iris stop ${IRISINSTNAME}."
+					rc=`sudo iris list ${IRISINSTNAME} 2>/dev/null`
+					if [ -z ${rc} ]
+					then
+						sudo iris stop ${IRISINSTNAME} quietly
+					fi
+
 					IRISBASELOC="/data"
 					IRISKEYLOC="/nethome/marmorri/iriskeys/iris.key"
 					IRISUSERNAME="_SYSTEM"
