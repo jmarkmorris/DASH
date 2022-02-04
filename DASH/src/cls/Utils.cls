@@ -31,7 +31,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		
-		kill ^%zDashResults 
+		// kill ^%zDashResults 
 		
 		set ^Schema.Global = schema  // How is schema used?
 		set ^Scale.Global = scale
