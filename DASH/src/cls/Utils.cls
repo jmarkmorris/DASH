@@ -546,27 +546,33 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1) As %S
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row")
 		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row-id")
 		if $FIND($zv,"VEC") {
-			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields")
-			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",1)
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0)
+			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",1)
+			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0)
 		}
 		
 		// Selectivity Loads
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-row")
 		if $FIND($zv,"VEC") {
-			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-coltable")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-coltable",1)
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-coltable",0)
 		}
 
 		// NYTaxi Loads
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-row")
 		if $FIND($zv,"VEC") {
-			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",1)
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",0)
 		}
 
 		do ##class(DASH.Utils).GenerateData()
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-row")
 		if $FIND($zv,"VEC") {
-			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields")
-			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields",1)
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields",0)
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable",1)
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable",0)
 		}
 		
 
