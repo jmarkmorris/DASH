@@ -1,5 +1,16 @@
-Class DASH.Utils
+Class DASH.Utils Extends (%Persistent,%Populate) 
 {
+
+Property field1 As %Library.Binary;
+Property field2 As %Library.Currency;
+Property field3 As %Library.Date;
+Property field4 As %Library.Decimal;
+Property field5 As %Library.Double;
+Property field6 As %Library.Integer;
+Property field7 As %Library.Numeric;
+Property field8 As %Library.String(MAXLEN = 20);
+Property field9 As %Library.TimeStamp;
+
 
 ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1, shardkey As %String = "") As %Status [ SqlName = Load, SqlProc ]
 {
@@ -20,7 +31,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		
-		//kill ^DashResults // in this database
+		kill ^%zDashResults 
 		
 		set ^Schema.Global = schema  // How is schema used?
 		set ^Scale.Global = scale
@@ -31,8 +42,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set variables("schema") = $s(schema="":"", 1:schema_".")
 		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		set StepEnd = $zh
-		//set ^DashResults($i(^DashResults)) = "Dropping existing tables: "_$fn(StepEnd-StepStart,,2)_"s"
-		set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_"parasetting?"_","_^Indices.Global_","_^DDL.Global_","_"drop tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"drop tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 
 
 		set StepStart = StepEnd
@@ -40,8 +50,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		//set ^DashResults($i(^DashResults)) = "Creating new tables: "_$fn(StepEnd-StepStart,,2)_"s"
-		set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_"parasetting?"_","_^Indices.Global_","_^DDL.Global_","_"create tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"create tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 
 
 		
@@ -50,8 +59,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			//set ^DashResults($i(^DashResults)) = "Transforming foreign keys: "_$fn(StepEnd-StepStart,,2)_"s"
-			set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_"parasetting?"_","_^Indices.Global_","_^DDL.Global_","_"transform foreign keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"transform foreign keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 
 		}
 		
@@ -59,17 +67,17 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		//set ^DashResults($i(^DashResults)) = "Creating keys: "_$fn(StepEnd-StepStart,,2)_"s"
-		set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_"parasetting?"_","_^Indices.Global_","_^DDL.Global_","_"create keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"create keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 
+
+		write !,"before create indices"
 
 		if useindices {
 			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			//set ^DashResults($i(^DashResults)) = "Building indices: "_$fn(StepEnd-StepStart,,2)_"s"
-			set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_"parasetting?"_","_^Indices.Global_","_^DDL.Global_","_"building indices"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"building indices"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 
 		}
 
@@ -78,22 +86,18 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		//set ^DashResults($i(^DashResults)) = "Loading data: "_$fn(StepEnd-StepStart,,2)_"s"
-		set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_"parasetting?"_","_^Indices.Global_","_^DDL.Global_","_"load data"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
-
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"load data"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 
 		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		//set ^DashResults($i(^DashResults)) = "Tune tables: "_$fn(StepEnd-StepStart,,2)_"s"
-		set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_"parasetting?"_","_^Indices.Global_","_^DDL.Global_","_"tune tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"tune tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 
 		if verbose {
-			
-			write !, "server, para, indices, organization, query, run time, build, scale"
-			for i = 1:1:^DashResults {
-				write !, ^DashResults(i)
+			write !, "server, benchmark, indices, organization, query, run time, build, scale"
+			for i = 1:1:^%zDashResults {
+				write !, ^%zDashResults(i)
 			}
 		}
 
@@ -124,7 +128,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		set InvokedFromNamespace = $znspace
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 
-		kill ^DashResults // in this database
+		kill ^%zDashResults
 
 		set ListDirStatement = ##class(%SQL.Statement).%New()
     	set status = ListDirStatement.%PrepareClassQuery("%File", "FileSet")
@@ -273,9 +277,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 						set StepEnd = $zh
 						if elapsed > 0 {
-							set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^Scale.Global
+							set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^Scale.Global
 						} else {
-							set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+							set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 						}
 					} else {
 						set StepStart = $zh
@@ -285,7 +289,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						if (database = "SelectivityTest") {
 								set QueryDescriptor = $REPLACE(QueryID,"-",",",3)  // Remove the "Q- and convert the other "-" to ","
 						}
-						set ^DashResults($i(^DashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryDescriptor_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
+						set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryDescriptor_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global
 					}				
 					quit:$$$ISERR(sc)
 				}
@@ -297,8 +301,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		//OPEN myfile:("WEAS"):5 // time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
 		//USE myfile
 			//write !, "server, para, indices, organization, query, run time, build, scale"
-			//for i = 1:1:^DashResults {
-			//	write !, ^DashResults(i)
+			//for i = 1:1:^%zDashResults {
+			//	write !, ^%zDashResults(i)
 			//}
 		//CLOSE myfile
 
@@ -308,9 +312,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			} else {
 				write !, "server, para, indices, organization, query, run time, build, scale"
 			}
-			for i = 1:1:^DashResults {
-				write !, ^DashResults(i)
-				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^Indices.Global_",,",^DashResults(i),",",$zv
+			for i = 1:1:^%zDashResults {
+				write !, ^%zDashResults(i)
+				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^Indices.Global_",,",^%zDashResults(i),",",$zv
 			}
 		}
 		
@@ -531,25 +535,66 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 
 	quit $$$OK
 }
+
 ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1) As %Status
 {
+	
+	kill ^%zDashResults
+	
 	for i = 1:1:iterations {
 		// TPCH 1G Loads
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields")
-		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable")
 		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row-id")
-
+		if $FIND($zv,"VEC") {
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields")
+			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable")
+		}
+		
 		// Selectivity Loads
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-row")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-coltable")
+		if $FIND($zv,"VEC") {
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-coltable")
+		}
 
 		// NYTaxi Loads
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-row")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable")
+		if $FIND($zv,"VEC") {
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable")
+		}
+
+		do ##class(DASH.Utils).GenerateData()
+		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-row")
+		if $FIND($zv,"VEC") {
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable")
+		}
+		
 
 	}
 }
 
+ClassMethod GenerateData (records As %Integer = 1000000, verbose As %Boolean = 1) As %Status
+{
+	// generate the data in a table with populate
+	set RecordCount = ##class(DASH.Utils).Populate(records,0 /* verbose */,1 /* Defer indices */,,0 /* Don't do tune table */ ,1 /* deterministic */) 
+	write !, "Records requested : "_records
+	write !, "Records populated : "_RecordCount,!
+
+	SET myfile = "/tmp/dashdata"  // TO DO : make this a unique file name so can run concurrent sessions.
+	OPEN myfile:("WEAS"):5 // time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
+	USE myfile
+	for i = 1:1:RecordCount {
+		Set oref =##class(DASH.Utils).%OpenId(i)
+		// Populate puts a string such as J3546 in the Binary field1. Replace it with alternating 0, 1 pattern.
+		write i#2_"|"_oref.field2_"|"_oref.field3_"|"_oref.field4_"|"_oref.field5_"|"_oref.field6_"|"_oref.field7_"|"_oref.field8_"|"_oref.field9_"|",!
+	}
+	CLOSE myfile
 
 }
+
+
+
+}
+
+
+

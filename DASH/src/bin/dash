@@ -1,6 +1,6 @@
 PS3="Enter your choice : "
 
-select topic in quit cololist colostop install tpch tpchq NYTaxi micro selectivity MONLBL SQL sharding rtpc shd
+select topic in quit cololist colostop install tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
 do
 	echo "DASH is frequently utilized on high performance servers. These processes may not work on laptops."
 	echo "Frequently used commands:"
@@ -214,7 +214,7 @@ do
 		echo "ALTER TABLE schema.TableName RENAME NewTableName"
 		echo "Do \$SYSTEM.SQL.Schema.ExportDDL(\"schema or *\",\"table or *\",\"/tmp/myddl\")"
 	      ;;
-	    tpchq)
+	    tpch-query-text)
 		echo "Display TPCH query text : "
 		a=`pwd`
 		cd /nethome/marmorri/benchmark/TPCH/src/sql/queries
@@ -231,7 +231,7 @@ do
 		done
 		cd $a
 	      ;;
-	    tpch)
+	    tpch-benchmark)
 		echo "clone the DASH repo from GitHub"
 		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
@@ -262,7 +262,7 @@ do
 		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
 	      ;;
-	    micro)
+	    micro-benchmark)
 		echo "clone the DASH repo from GitHub"
 		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
@@ -272,7 +272,7 @@ do
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"all\",\"5\")"
 	      ;;
-	    NYTaxi)
+	    NYTaxi-benchmark)
 		echo "clone the DASH repo from GitHub"
 		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
@@ -291,7 +291,7 @@ do
 		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q01*\", \"1\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q02*\", \"1\")"
 		;;
-	    selectivity)
+	    selectivity-benchmark)
 		echo "clone the DASH repo from GitHub"
 		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
 		read repo
@@ -310,7 +310,17 @@ do
 		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5-10*\", \"1\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-20-20-20*\", \"1\")"
 		;;
-	    sharding)
+	    load-benchmark)
+		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
+		read repo
+		repo=${repo:-/nethome/marmorri/DASH}
+		echo "repo : ${repo}"
+		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+		echo "do ##class(DASH.Utils).RunLoads()"
+		echo "do ##class(DASH.Utils).GenerateData()"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/LOAD\",\"load\",\"\",\"1\",\"ddl-row\")"
+		;;
+		sharding)
 		echo "zw \$SYSTEM.Cluster.Initialize(\"RB\",\"RB-MASTER\")"
 		echo "zw \$system.Cluster.ListNodes()"
 		echo "zw \$SYSTEM.Cluster.AttachAsComputeNode(\"IRIS://colobench1-p1:1972/RB\")"
