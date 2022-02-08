@@ -1,75 +1,75 @@
-ALTER TABLE ${schema}REGION
+ALTER TABLE ${schema}REGION${org}
     ADD CONSTRAINT REGION_PK
             PRIMARY KEY (R_REGIONKEY)
 ;
 
-ALTER TABLE ${schema}NATION
+ALTER TABLE ${schema}NATION${org}
     ADD CONSTRAINT NATION_PK
             PRIMARY KEY (N_NATIONKEY),
         CONSTRAINT N_REGIONKEY_FK 
             FOREIGN KEY (N_REGIONKEY)
-            REFERENCES ${schema}REGION(R_REGIONKEY)
+            REFERENCES ${schema}REGION${org}(R_REGIONKEY)
             NOCHECK
 ;
 
-ALTER TABLE ${schema}SUPPLIER
+ALTER TABLE ${schema}SUPPLIER${org}
     ADD CONSTRAINT SUPPLIER_PK
             PRIMARY KEY (S_SUPPKEY),
         CONSTRAINT S_NATIONKEY_FK
             FOREIGN KEY (S_NATIONKEY)
-            REFERENCES ${schema}NATION(N_NATIONKEY)
+            REFERENCES ${schema}NATION${org}(N_NATIONKEY)
             NOCHECK
 ;
 
-ALTER TABLE ${schema}PART
+ALTER TABLE ${schema}PART${org}
     ADD CONSTRAINT PART_PK
             PRIMARY KEY (P_PARTKEY)
 ;
 
-ALTER TABLE ${schema}PARTSUPP
+ALTER TABLE ${schema}PARTSUPP${org}
     ADD CONSTRAINT PARTSUPP_PK
             PRIMARY KEY (PS_PARTKEY, PS_SUPPKEY),
         CONSTRAINT PS_PARTKEY_FK
             FOREIGN KEY (PS_PARTKEY)
-            REFERENCES ${schema}PART(P_PARTKEY)
+            REFERENCES ${schema}PART${org}(P_PARTKEY)
             NOCHECK,
         CONSTRAINT PS_SUPPKEY_FK
             FOREIGN KEY (PS_SUPPKEY)
-            REFERENCES ${schema}SUPPLIER(S_SUPPKEY)
+            REFERENCES ${schema}SUPPLIER${org}(S_SUPPKEY)
             NOCHECK
 ;
 
-ALTER TABLE ${schema}CUSTOMER
+ALTER TABLE ${schema}CUSTOMER${org}
     ADD CONSTRAINT CUSTOMER_PK
             PRIMARY KEY (C_CUSTKEY),
         CONSTRAINT C_NATIONKEY_FK
             FOREIGN KEY (C_NATIONKEY)
-            REFERENCES ${schema}NATION(N_NATIONKEY)
+            REFERENCES ${schema}NATION${org}(N_NATIONKEY)
             NOCHECK
 ;
 
-ALTER TABLE ${schema}ORDERS
+ALTER TABLE ${schema}ORDERS${org}
     ADD CONSTRAINT ORDERS_PK
             PRIMARY KEY (O_ORDERKEY),
         CONSTRAINT O_CUSTKEY_FK
             FOREIGN KEY (O_CUSTKEY)
-            REFERENCES ${schema}CUSTOMER(C_CUSTKEY)
+            REFERENCES ${schema}CUSTOMER${org}(C_CUSTKEY)
             NOCHECK
 ;
 
-ALTER TABLE ${schema}LINEITEM
+ALTER TABLE ${schema}LINEITEM${org}
     ADD CONSTRAINT LINEITEM_PK
             PRIMARY KEY (L_ORDERKEY, L_LINENUMBER),
         CONSTRAINT L_ORDERKEY_FK
             FOREIGN KEY (L_ORDERKEY)
-            REFERENCES ${schema}ORDERS(O_ORDERKEY)
+            REFERENCES ${schema}ORDERS${org}(O_ORDERKEY)
             NOCHECK,
         CONSTRAINT L_PARTKEY_FK
             FOREIGN KEY (L_PARTKEY)
-            REFERENCES ${schema}PART(P_PARTKEY)
+            REFERENCES ${schema}PART${org}(P_PARTKEY)
             NOCHECK,
         CONSTRAINT L_SUPPKEY_FK
             FOREIGN KEY (L_SUPPKEY)
-            REFERENCES ${schema}SUPPLIER(S_SUPPKEY)
+            REFERENCES ${schema}SUPPLIER${org}(S_SUPPKEY)
             NOCHECK
 ;

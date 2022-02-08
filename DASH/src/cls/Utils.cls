@@ -12,7 +12,7 @@ Property field8 As %Library.String(MAXLEN = 20);
 Property field9 As %Library.TimeStamp;
 
 
-ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1, shardkey As %String = "") As %Status [ SqlName = Load, SqlProc ]
+ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1, shardkey As %String = "", org As %String = "") As %Status [ SqlName = Load, SqlProc ]
 {
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
@@ -33,27 +33,28 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		
 		// kill ^%zDashResults 
 		
-		set ^Schema.Global = schema  // How is schema used?
+		set ^Schema.Global = schema
 		set ^Scale.Global = scale
 		set ^DDL.Global = ddl
 		set ^Indices.Global = $SELECT(useindices:"INDICES", 'useindices:"NO INDICES")
 
-		set (SequenceStart, StepStart) = $zh
 		set variables("schema") = $s(schema="":"", 1:schema_".")
+		set variables("org") = org   // if this method is called with an org, then create dummy tables only and skip the load
+		set variables("shardkey") = $s(shardkey="":"", 1:", shard key("_shardkey_")")
+
+
+		set (SequenceStart, StepStart) = $zh
 		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		set StepEnd = $zh
 		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"drop tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH
 
 
 		set StepStart = StepEnd
-		set variables("shardkey") = $s(shardkey="":"", 1:", shard key("_shardkey_")")
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
 		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"create tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH
 
-
-		
 		if ddl="ddl-row-id" {
 			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
@@ -70,8 +71,6 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"create keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH
 
 
-		write !,"before create indices"
-
 		if useindices {
 			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
@@ -81,21 +80,23 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		}
 
-		set StepStart = StepEnd
-		set variables("data_dir") = path_"data"_separator_scale_separator
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
-		quit:$$$ISERR(sc)
-		set StepEnd = $zh
-		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"load data"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH
+		if (org="") {
+			set StepStart = StepEnd
+			set variables("data_dir") = path_"data"_separator_scale_separator
+			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
+			quit:$$$ISERR(sc)
+			set StepEnd = $zh
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"load data"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH
 
-		set StepStart = StepEnd
-		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
-		quit:$$$ISERR(sc)
-		set StepEnd = $zh
-		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"tune tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH
+			set StepStart = StepEnd
+			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
+			quit:$$$ISERR(sc)
+			set StepEnd = $zh
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"tune tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH
+		}
 
 		if verbose {
-			write !, "server, benchmark, indices, organization, query, run time, build, scale"
+			write !, "server, benchmark, indices, organization, query, run time, build, scale, date, $zh"
 			for i = 1:1:^%zDashResults {
 				write !, ^%zDashResults(i)
 			}
@@ -537,6 +538,7 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 	quit $$$OK
 }
 
+// do ##class(DASH.Utils).RunLoads()
 ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1) As %Status
 {
 	
@@ -545,12 +547,67 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1) As %S
 	for i = 1:1:iterations {
 		// TPCH 1G Loads
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row")
+		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row",1,,,"_R_IDX")
+		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row",1,,,"_R_NOIDX")
+		// now do insert selects
+		// R to R
+
+		if $FIND($zv,"VEC") {
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",1,,,"_CF_IDX")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0,,,"_CF_NOIDX")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",1,,,"_CT_IDX")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0,,,"_CT_NOIDX")
+			
+			// now do insert selects
+			// R to CF_IDX
+			// R to CF_NOIDX
+			// R to CT_IDX
+			// R to CT_NOIDX
+			
+		}
+
 		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row-id")
+
 		if $FIND($zv,"VEC") {
 			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",1)
 			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0)
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",1,,,"_CF_IDX")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0,,,"_CF_NOIDX")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",1,,,"_CT_IDX")
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0,,,"_CT_NOIDX")
+
+			// now do insert selects
+			// CF_IDX to R
+			// CF_IDX to CF_IDX
+			// CF_IDX to CF_NOIDX
+			// CF_IDX to CT_IDX
+			// CF_IDX to CT_NOIDX
+
+			// CF_NOIDX to R
+			// CF_NOIDX to CF_IDX
+			// CF_NOIDX to CF_NOIDX
+			// CF_NOIDX to CT_IDX
+			// CF_NOIDX to CT_NOIDX
+
 			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",1)
 			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0)
+			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",1,,,"_CF_IDX")
+			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0,,,"_CF_NOIDX")
+			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",1,,,"_CT_IDX")
+			//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0,,,"_CT_NOIDX")
+
+			// now do insert selects
+			// CT_IDX to R
+			// CT_IDX to CF_IDX
+			// CT_IDX to CF_NOIDX
+			// CT_IDX to CT_IDX
+			// CT_IDX to CT_NOIDX
+
+			// CT_NOIDX to R
+			// CT_NOIDX to CF_IDX
+			// CT_NOIDX to CF_NOIDX
+			// CT_NOIDX to CT_IDX
+			// CT_NOIDX to CT_NOIDX
 		}
 		
 		// Selectivity Loads

@@ -1,16 +1,16 @@
-TUNE TABLE ${schema}NATION
+TUNE TABLE ${schema}NATION${org}
 ;
-TUNE TABLE ${schema}REGION
+TUNE TABLE ${schema}REGION${org}
 ;
-TUNE TABLE ${schema}PART
+TUNE TABLE ${schema}PART${org}
 ;
-TUNE TABLE ${schema}SUPPLIER
+TUNE TABLE ${schema}SUPPLIER${org}
 ;
-TUNE TABLE ${schema}PARTSUPP
+TUNE TABLE ${schema}PARTSUPP${org}
 ;
-TUNE TABLE ${schema}CUSTOMER
+TUNE TABLE ${schema}CUSTOMER${org}
 ;
-TUNE TABLE ${schema}ORDERS
+TUNE TABLE ${schema}ORDERS${org}
 ;
-TUNE TABLE ${schema}LINEITEM
+TUNE TABLE ${schema}LINEITEM${org}
 ;
