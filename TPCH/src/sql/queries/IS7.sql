@@ -1,0 +1,5 @@
+TRUNCATE TABLE ORDERS${org}
+;
+
+INSERT INTO ORDERS${org} SELECT * FROM ${parasetting} ORDERS
+;

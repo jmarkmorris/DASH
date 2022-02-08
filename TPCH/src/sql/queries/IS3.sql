@@ -1,0 +1,5 @@
+TRUNCATE TABLE PART${org}
+;
+
+INSERT INTO PART${org} SELECT * FROM ${parasetting} PART
+;

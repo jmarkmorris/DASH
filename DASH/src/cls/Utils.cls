@@ -113,7 +113,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	quit sc
 }
 
-ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "Q*", iterations As %String = "5", verbose As %Boolean = 1) As %Status
+ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "Q*", iterations As %String = "5", verbose As %Boolean = 1, org As %String = "") As %Status
 {
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
@@ -127,10 +127,11 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		set:(database'="") variables("database") = database
 
 		set variables("parasetting") = parasetting
+		set variables("org") = org
 		set InvokedFromNamespace = $znspace
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 
-		kill ^%zDashResults
+		// kill ^%zDashResults
 
 		set ListDirStatement = ##class(%SQL.Statement).%New()
     	set status = ListDirStatement.%PrepareClassQuery("%File", "FileSet")
@@ -140,8 +141,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
         	quit  
     	}
     
-		// match all Q* files in the directory, regardless of their extension.
-		// set ResultSet = ListDirStatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, "Q*", "Name") 
+		// match all query files in the directory, regardless of their extension.
 		set ResultSet = ListDirStatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, query, "Name") 
 
     	while ResultSet.%Next() {
@@ -165,7 +165,11 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				set elapsed = 0
 				set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 			} else { // BenchmarkType = "sql"
-				set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 1)
+				if $FIND(QueryID,"IS") {   // workaround because I-S explains are not yet supported 
+					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
+				} else {
+					set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 1)
+				}
 			}
 			quit:$$$ISERR(sc)
 			
@@ -287,7 +291,25 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						set StepStart = $zh
 						set sc = ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".sql", QueryID, .variables,,, .statement, /* DoPrepare : */ 0, /* DoExplain As %Boolean : */ 0)
 						set StepEnd = $zh
-						set QueryDescriptor = QueryID
+
+						// rewrite this for modularity and conciseness
+						if ^Indices.Global = "INDICES" { set Qidx = "IDX" } else { set Qidx = "IDX" }
+						if ^DDL.Global = "ddl-row" { 
+							set Qorg = "R" 
+						} elseif ^DDL.Global = "ddl-colfields" { 
+							set Qorg = "CF" 
+						} elseif ^DDL.Global = "ddl-coltable" {
+							set Qorg = "CT" 
+						} else {
+							set Qorg = "ERR"
+						}
+						
+						if $FIND(QueryID,"IS") {
+							set QueryDescriptor = Qorg_"_"_Qidx_"_"_QueryID_"_"_org
+						} else {
+							set QueryDescriptor = QueryID
+						}
+						
 						if (database = "SelectivityTest") {
 								set QueryDescriptor = $REPLACE(QueryID,"-",",",3)  // Remove the "Q- and convert the other "-" to ","
 						}
@@ -318,6 +340,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 				write !, ^%zDashResults(i)
 				// write !, ##class(%SYS.System).GetNodeName(1),",",parasetting,","_^Indices.Global_",,",^%zDashResults(i),",",$zv
 			}
+			// for i = 1:1:^%zDashResults {write !, ^%zDashResults(i)}
 		}
 		
 
@@ -426,7 +449,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 						set SQL(1) = SaveSQL
 					}
 				
-					if (DoPrepare) {
+					//if (DoPrepare) { // Bug here when the benchmark has two sql statements in the file. Then we can't skip the prepare and repeat the query.
 						write:verbose !,"Preparing statement : ",SQL(1)
 						set rs = statement.%Prepare(.SQL)
 						if ($System.Status.IsError(rs)) {
@@ -437,7 +460,7 @@ ClassMethod RunSQL(file As %String, ResultSetFile As %String, ByRef replace As %
 							}
 						}
 						
-					}					
+					//}					
 
 					write:verbose !,"Executing statement : ",SQL(1)
 					set rs = statement.%Execute()
@@ -551,6 +574,10 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1) As %S
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row",1,,,"_R_NOIDX")
 		// now do insert selects
 		// R to R
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_R_IDX")
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_R_IDX")
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_R_NOIDX")
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
 
 		if $FIND($zv,"VEC") {
 			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",1,,,"_CF_IDX")

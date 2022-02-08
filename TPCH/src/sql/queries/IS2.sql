@@ -1,0 +1,5 @@
+TRUNCATE TABLE REGION${org}
+;
+
+INSERT INTO REGION${org} SELECT * FROM ${parasetting} REGION
+;

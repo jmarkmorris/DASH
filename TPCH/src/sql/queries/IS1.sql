@@ -1,0 +1,5 @@
+TRUNCATE TABLE NATION${org}
+;
+
+INSERT INTO NATION${org} SELECT * FROM ${parasetting} NATION
+;
