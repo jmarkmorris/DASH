@@ -305,7 +305,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						}
 						
 						if $FIND(QueryID,"IS") {
-							set QueryDescriptor = Qorg_"_"_Qidx_"_"_QueryID_"_"_org
+							set QueryDescriptor = Qorg_"_"_Qidx_"_"_QueryID_org // org has a leading underscore
 						} else {
 							set QueryDescriptor = QueryID
 						}
@@ -586,10 +586,15 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1) As %S
 			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0,,,"_CT_NOIDX")
 			
 			// now do insert selects
-			// R to CF_IDX
-			// R to CF_NOIDX
-			// R to CT_IDX
-			// R to CT_NOIDX
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CF_IDX")
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
+
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CT_IDX")
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
 			
 		}
 
@@ -701,18 +706,66 @@ ClassMethod RunTPCH(iterations As %String = "5", verbose As %Boolean = 1) As %St
 		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","Q*", iterations)
 		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch",,"Q*", iterations) // auto parallel
 		
-		
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0)  // without indices
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","Q*", iterations)
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","Q*", iterations)
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch",,"Q*", iterations) // auto parallel
+		// skip for now
+		#; do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0)  // without indices
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","Q*", iterations)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","Q*", iterations)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch",,"Q*", iterations) // auto parallel
 
 		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",1)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","Q*", iterations)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","Q*", iterations)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch",,"Q*", iterations) // auto parallel
+
 		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","Q*", iterations)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","Q*", iterations)
+		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch",,"Q*", iterations) // auto parallel
 
 	}
 }
 
+ClassMethod RunNYTaxi(iterations As %String = "5", verbose As %Boolean = 1) As %Status
+{
+	
+	kill ^%zDashResults
+
+	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-row",1)
+	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","Q*", iterations,verbose)
+	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","Q*", iterations,verbose)
+	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","Q*", iterations,verbose)
+
+	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-row",0)
+	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","Q*", iterations,verbose)
+	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","Q*", iterations,verbose)
+	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","Q*", iterations,verbose)
+
+	if $FIND($zv,"VEC") {
+		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",1)
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","Q*", iterations,verbose)
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","Q*", iterations,verbose)
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","Q*", iterations,verbose)
+
+		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",0)
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","Q*", iterations,verbose)
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","Q*", iterations,verbose)
+		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","Q*", iterations,verbose)
+	}
+		
+}
+
+ClassMethod RunDASH(serverfarm As %String = "", iterations As %String = "5", verbose As %Boolean = 1) As %Status
+{
+  set server = ##class(%SYS.System).GetNodeName(1)
+  set servernum = $REPLACE(server, serverfarm, "")
+   
+  if (servernum = 3) {do ##class(DASH.Utils).RunTPCH(iterations, verbose)}
+  if (servernum = 5) {do ##class(DASH.Utils).RunNYTaxi(iterations, verbose)}
+  //if (servernum = 6) {do ##class(DASH.Utils).RunLoads(iterations, verbose)}
+  //if (servernum = 8) {do ##class(DASH.Utils).RunSelectivity(iterations, verbose)}
+
+  
+}
 
 
 }
