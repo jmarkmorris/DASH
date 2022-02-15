@@ -1,6 +1,6 @@
 PS3="Enter your choice : "
 
-select topic in quit cololist colostop install tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
+select topic in quit cololist colostop install DASH tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
 do
 	echo "DASH is frequently utilized on high performance servers. These processes may not work on laptops."
 	echo "Frequently used commands:"
@@ -182,7 +182,8 @@ do
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunTPCH.cls\",\"cuk\")"
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDash.cls\",\"cuk\")"
+					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
+					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
 					echo "do ##class(DASH.Utils).Tune()"
 					echo "The Tune() method will issue an IRIS restart."
 					echo "iris session ${IRISINSTNAME}"
@@ -192,6 +193,27 @@ do
 			done
 		done
 	      ;;
+		DASH)
+			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH] : "
+			read repo
+			repo=${repo:-/nethome/marmorri/DASH}
+			echo "repo : ${repo}"
+			iris allw
+			echo -n "Enter instance name : (type return to choose again) : "
+			read IRISINSTNAME
+			if [ -z ${IRISINSTNAME} ]
+			then
+				continue
+			fi
+			echo "iris session ${IRISINSTNAME}"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunTPCH.cls\",\"cuk\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
+			echo "do ##class(RunDASH).RunDASH(\"<serverfarm>\")"
+		  ;;
 	    MONLBL)
 		echo "DASH benchmarks perform a MONLBL if the iteration count is specified as 0, e.g.,"
 		echo "do ##class(DASH.Utils).Run(\"/nethome/marmorri/DASH/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"0\")"
