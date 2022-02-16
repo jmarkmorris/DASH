@@ -14,6 +14,7 @@ do
 			/nethome/marmorri/bin/markoalert.sh
 	      ;;
 		colostop)
+			iris allw
 			echo -n "Enter instance name : (type return to choose again) : "
 			read IRISINSTNAME
 			if [ -z ${IRISINSTNAME} ]
@@ -51,7 +52,8 @@ do
 				fi
 
 			done
-			echo -n "Enter instance name : "
+			iris allw
+			echo -n "For a list of SMP urls, enter instance name (or return to continue) : "
 			read IRISINSTNAME
 			if [ -z ${IRISINSTNAME} ]
 			then
@@ -61,7 +63,8 @@ do
 			echo "SMP urls :"
 			for i in 1 2 3 4 5 6 7 8 9 10 11 12
 			do
-				irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-" | egrep -v "^dn"`
+				#irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-" | egrep -v "^dn"`
+				irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-"`
 				if [ "${irisallw}" ]
 							then
 					SMPport=`ssh colobench${i} iris list ${IRISINSTNAME} | egrep WebServer | sed -e "s/^.*WebServer = //" | sed -e "s/.$//"`

@@ -1,7 +1,7 @@
 Class RunSelectivity extends DASH.Utils 
 {
 
-ClassMethod RunSelectivity(iterations As %String = "5", verbose As %Boolean = 1, indices As %Boolean = 1, columnar As %Boolean = 1) As %Status
+ClassMethod RunSelectivity(iterations As %String = "5", verbose As %Boolean = 1, indices As %Boolean = 0, columnar As %Boolean = 1) As %Status
 {
 	
 	kill ^%zDashResults
