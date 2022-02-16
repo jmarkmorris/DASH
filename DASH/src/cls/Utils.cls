@@ -303,7 +303,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						}
 						
 						if $FIND(QueryID,"IS") {
-							set QueryDescriptor = Qorg_"_"_Qidx_"_"_QueryID_org // org has a leading underscore
+							set QueryDescriptor = Qorg_","_Qidx_","_QueryID_$REPLACE(org,"_",",",1) // org has a leading underscore
 						} else {
 							set QueryDescriptor = QueryID
 						}
@@ -311,6 +311,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						if (database = "SelectivityTest") {
 								set QueryDescriptor = $REPLACE(QueryID,"-",",",3)  // Remove the "Q- and convert the other "-" to ","
 						}
+
 						set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryDescriptor_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_database
 					}				
 					quit:$$$ISERR(sc)
@@ -332,7 +333,12 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 			if (database = "SelectivityTest") {
 				write !, "server, para, indices, organization, x, y, z, run time, build, scale, date, $zh, test"
 			} else {
-				write !, "server, para, indices, organization, query, run time, build, scale, date, $zh, test"
+				if $FIND(QueryID,"IS",1) {
+					write !, "server, para, indices, organization, sel org, sel idx, table, ins org, ins idx, run time, build, scale, date, $zh, test"
+				} else {
+					write !, "server, para, indices, organization, query, run time, build, scale, date, $zh, test"
+				}
+
 			}
 			for i = 1:1:^%zDashResults {
 				write !, ^%zDashResults(i)

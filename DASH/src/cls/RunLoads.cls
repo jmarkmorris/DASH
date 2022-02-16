@@ -152,7 +152,7 @@ ClassMethod GenerateData (records As %Integer = 1000000, verbose As %Boolean = 1
 	write !, "Records populated : "_RecordCount,!
 
 	SET myfile = "/tmp/dashdata"  // TO DO : make this a unique file name so can run concurrent sessions.
-	OPEN myfile:("WEAS"):5 // time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
+	OPEN myfile:("WTAS"):5 // time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
 	USE myfile
 	for i = 1:1:RecordCount {
 		Set oref =##class(DASH.Utils).%OpenId(i)
