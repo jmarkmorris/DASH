@@ -16,3 +16,4 @@ CREATE TABLE ${schema}D (
     Sel50 INTEGER WITH STORAGETYPE = COLUMNAR, 
     RowNUM INTEGER ${shardkey}
     ) 
+;
