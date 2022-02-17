@@ -312,6 +312,7 @@ do
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-coltable\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-colfields\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q*\", \"1\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
