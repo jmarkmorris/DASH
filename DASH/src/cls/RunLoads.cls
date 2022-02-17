@@ -32,22 +32,30 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 		// Load TPCH 1G to CF tables
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",indices)
 
-		// Load TPCH 1G to CT tables - if decide to enable this, need to add another command line option to create CF or CT tables, not both
-		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",indices) // skip
-
 		// Load NYTaxi to CT tables
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",indices)
-				
+
 		// Load Selectivity to CT tables
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-coltable",indices)
 
 		// Load Load1m to CT tables
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable",indices)
-
-		// Load Load1m to CF tables -  - if decide to enable this, need to add another command line option to create CF or CT tables, not both
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields",indices)
 		
-	}	
+	}	// else {
+
+		// if decide to enable CF sources, need to add another command line option to create CF or CT tables, not both
+
+		// Load TPCH 1G to CT tables - if decide to enable this, need to add another command line option to create CF or CT tables, not both
+		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",indices) // actually this will move up and CF above will move here
+
+		// Load NYTaxi to CF tables
+
+		// Load Selectivity to CF tables
+
+		// Load Load1m to CF tables -  
+		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields",indices)
+
+	//}
 
 	// To Do : The following could be done with loops and far less code.
 		
