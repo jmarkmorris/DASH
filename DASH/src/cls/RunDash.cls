@@ -1,8 +1,7 @@
 Class RunDASH extends DASH.Utils
 {
 
-
-
+// do ##class(RunDASH).RunDASH("<serverfarm>")
 ClassMethod RunDASH(serverfarm As %String = "", iterations As %String = "5", verbose As %Boolean = 1) As %Status
 {
   
