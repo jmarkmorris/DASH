@@ -332,6 +332,7 @@ do
 		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
 		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-coltable\")"
+		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-colfields\")"
 		echo "Queries are of the form below where X,Y,Z are the tags in the query id."
 		echo "select AVG(C.RowNUM) FROM C JOIN D ON C.selX = 0 AND D.selY = 0 AND C.selZ = D.selZ"
 		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%NOPARALLEL\",\"Q*\", \"1\")"
