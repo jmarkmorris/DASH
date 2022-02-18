@@ -1,6 +1,20 @@
-CREATE TABLE ${schema}C (Sel1 INTEGER, Sel5 INTEGER, Sel10 INTEGER, Sel20 INTEGER, Sel50 INTEGER, RowNUM INTEGER ${shardkey})
+CREATE TABLE ${schema}C${org} (
+    Sel1 INTEGER, 
+    Sel5 INTEGER, 
+    Sel10 INTEGER, 
+    Sel20 INTEGER, 
+    Sel50 INTEGER, 
+    RowNUM INTEGER ${shardkey}
+    )
 ;
 
-CREATE TABLE ${schema}D (Sel1 INTEGER, Sel5 INTEGER, Sel10 INTEGER, Sel20 INTEGER, Sel50 INTEGER, RowNUM INTEGER ${shardkey})
+CREATE TABLE ${schema}D${org} (
+    Sel1 INTEGER, 
+    Sel5 INTEGER, 
+    Sel10 INTEGER, 
+    Sel20 INTEGER, 
+    Sel50 INTEGER, 
+    RowNUM INTEGER ${shardkey}
+    )
 ;
 

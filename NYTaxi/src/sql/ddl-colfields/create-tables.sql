@@ -1,4 +1,4 @@
-CREATE TABLE ${schema}NYTaxi  ( 
+CREATE TABLE ${schema}NYTaxi${org}  ( 
 			VendorID  INTEGER WITH STORAGETYPE = COLUMNAR,
 			tpep_pickup_datetime       TIMESTAMP WITH STORAGETYPE = COLUMNAR,
 			tpep_dropoff_datetime       TIMESTAMP WITH STORAGETYPE = COLUMNAR,

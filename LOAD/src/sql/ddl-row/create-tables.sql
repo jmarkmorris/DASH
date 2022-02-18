@@ -1,4 +1,4 @@
-CREATE TABLE ${schema}DASHLOAD  ( 
+CREATE TABLE ${schema}DASHLOAD${org}  ( 
 	field1		BINARY,
 	field2		MONEY,
 	field3		DATE,
