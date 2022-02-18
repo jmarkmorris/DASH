@@ -1,6 +1,6 @@
-TUNE TABLE ${schema}C
+TUNE TABLE ${schema}C${org}
 ;
 
-TUNE TABLE ${schema}D
+TUNE TABLE ${schema}D${org}
 ;
 

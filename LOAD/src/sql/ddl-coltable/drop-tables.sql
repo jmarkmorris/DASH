@@ -1,3 +1,3 @@
-DROP TABLE ${schema}DASHLOAD
+DROP TABLE ${schema}DASHLOAD${org}
 ;
 

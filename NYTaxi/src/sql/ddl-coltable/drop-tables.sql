@@ -1,3 +1,3 @@
-DROP TABLE ${schema}NYTaxi
+DROP TABLE ${schema}NYTaxi${org}
 ;
 
