@@ -17,6 +17,11 @@ ClassMethod RunSelectivity(iterations As %String = "5", verbose As %Boolean = 1,
 			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","%NOPARALLEL","Q*",iterations,verbose)
 			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","%PARALLEL","Q*",iterations,verbose)
 			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","Q*",iterations,verbose)
+
+			do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","1","ddl-colfields",indices)
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","%NOPARALLEL","Q*",iterations,verbose)
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","%PARALLEL","Q*",iterations,verbose)
+			do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","SelectivityTest","","Q*",iterations,verbose)
 		}
 	}
 }
