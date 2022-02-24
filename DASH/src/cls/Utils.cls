@@ -330,15 +330,14 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		//CLOSE myfile
 
 		if (verbose & iterations) {
-			if (database = "SelectivityTest") {
-				write !, "server, para, indices, organization, x, y, z, run time, build, scale, date, $zh, test"
+			if $FIND(QueryID,"IS",1) {
+				write !, "server, para, indices, organization, sel org, sel idx, table, ins org, ins idx, run time, build, scale, date, $zh, test"
 			} else {
-				if $FIND(QueryID,"IS",1) {
-					write !, "server, para, indices, organization, sel org, sel idx, table, ins org, ins idx, run time, build, scale, date, $zh, test"
+				if (database = "SelectivityTest") {
+					write !, "server, para, indices, organization, x, y, z, run time, build, scale, date, $zh, test"
 				} else {
 					write !, "server, para, indices, organization, query, run time, build, scale, date, $zh, test"
 				}
-
 			}
 			for i = 1:1:^%zDashResults {
 				write !, ^%zDashResults(i)
