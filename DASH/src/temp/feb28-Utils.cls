@@ -31,8 +31,10 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 				
-		set indices = $SELECT(useindices:"INDICES", 'useindices:"NO INDICES")
-
+		set ^Schema.Global = schema
+		set ^Scale.Global = scale
+		set ^DDL.Global = ddl
+		set ^Indices.Global = $SELECT(useindices:"INDICES", 'useindices:"NO INDICES")
 
 		set variables("schema") = $s(schema="":"", 1:schema_".")
 		set variables("org") = org   // if this method is called with an org, then create dummy tables only and skip the load
@@ -42,21 +44,21 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set (SequenceStart, StepStart) = $zh
 		do ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"drop-tables.sql","drop-tables", .variables, 1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		set StepEnd = $zh
-		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"drop tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"drop tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
 
 
 		set StepStart = StepEnd
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-tables.sql","create-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"create tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"create tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
 
 		if ddl="ddl-row-id" {
 			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"swap-keys.sql","swap-keys", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"transform foreign keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"transform foreign keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
 
 		}
 		
@@ -64,7 +66,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-keys.sql","create-keys", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 		quit:$$$ISERR(sc)
 		set StepEnd = $zh
-		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"create keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
+		set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"create keys"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
 
 
 		if useindices {
@@ -72,7 +74,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"create-indices.sql","create-indices", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"building indices"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"building indices"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
 
 		}
 
@@ -82,25 +84,13 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"load data"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"load data"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
 
 			set StepStart = StepEnd
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"tune-tables.sql","tune-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh
-			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"tune tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
-		
-			// in the case where data is loaded, we set up the %zDASH.Global so the info can be used by the Run() method
-			set ^%zDASH.Global(database,"schema") = schema
-			set ^%zDASH.Global(database,"scale") = scale
-			set ^%zDASH.Global(database,"ddl") = ddl
-			set ^%zDASH.Global(database,"indices") = indices
-
-			write !, "schema = ", ^%zDASH.Global(database,"schema")
-			write !, "scale = ", ^%zDASH.Global(database,"scale")
-			write !, "ddl = ", ^%zDASH.Global(database,"ddl")
-			write !, "indices = ", ^%zDASH.Global(database,"indices")
-		
+			set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_database_","_^Indices.Global_","_^DDL.Global_","_"tune tables"_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_"Load"
 		}
 
 		if verbose {
@@ -123,20 +113,6 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "Q*", iterations As %String = "5", verbose As %Boolean = 1, org As %String = "") As %Status
 {
-	
-	write !, "RUN database = ", database
-	write !, "RUN schema = ", ^%zDASH.Global(database,"schema")
-	write !, "RUN scale = ", ^%zDASH.Global(database,"scale")
-	write !, "RUN ddl = ", ^%zDASH.Global(database,"ddl")
-	write !, "RUN indices = ", ^%zDASH.Global(database,"indices")
-	
-	// Exit if no data is loaded for this database
-	if ('$DATA(^%zDASH.Global(database,"ddl"))) {
-		write !, "Table data has not been loaded."
-		quit
-	}
-
-	
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
@@ -291,8 +267,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 			}
 
-
-
+			set:'$DATA(^Indices.Global) ^Indices.Global = ""
+			set:'$DATA(^DDL.Global) ^DDL.Global = ""
+			set:'$DATA(^Scale.Global) ^Scale.Global = ""
 			set:(parasetting = "") parasetting = "autoparallel"
 
 			if iterations {
@@ -304,9 +281,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 						set StepEnd = $zh
 						if elapsed > 0 {
-							set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^%zDASH.Global(database,"indices")_","_^%zDASH.Global(database,"ddl")_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^%zDASH.Global(database,"scale")_","_$ZDATE($HOROLOG)_","_$ZH_","_database
+							set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_database
 						} else {
-							set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^%zDASH.Global(database,"indices")_","_^%zDASH.Global(database,"ddl")_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^%zDASH.Global(database,"scale")_","_$ZDATE($HOROLOG)_","_$ZH_","_database
+							set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryID_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_database
 						}
 					} else {
 						set StepStart = $zh
@@ -314,12 +291,12 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						set StepEnd = $zh
 
 						// rewrite this for modularity and conciseness
-						if ^%zDASH.Global(database,"indices") = "INDICES" { set Qidx = "IDX" } else { set Qidx = "NOIDX" }
-						if ^%zDASH.Global(database,"ddl") = "ddl-row" { 
+						if ^Indices.Global = "INDICES" { set Qidx = "IDX" } else { set Qidx = "NOIDX" }
+						if ^DDL.Global = "ddl-row" { 
 							set Qorg = "R" 
-						} elseif ^%zDASH.Global(database,"ddl") = "ddl-colfields" { 
+						} elseif ^DDL.Global = "ddl-colfields" { 
 							set Qorg = "CF" 
-						} elseif ^%zDASH.Global(database,"ddl") = "ddl-coltable" {
+						} elseif ^DDL.Global = "ddl-coltable" {
 							set Qorg = "CT" 
 						} else {
 							set Qorg = "ERR"
@@ -335,7 +312,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						}
 						
 
-						set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^%zDASH.Global(database,"indices")_","_^%zDASH.Global(database,"ddl")_","_QueryDescriptor_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^%zDASH.Global(database,"scale")_","_$ZDATE($HOROLOG)_","_$ZH_","_database
+						set ^%zDashResults($i(^%zDashResults)) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^Indices.Global_","_^DDL.Global_","_QueryDescriptor_","_$fn(StepEnd-StepStart,,3)_","_$zv_","_^Scale.Global_","_$ZDATE($HOROLOG)_","_$ZH_","_database
 					}				
 					quit:$$$ISERR(sc)
 				}

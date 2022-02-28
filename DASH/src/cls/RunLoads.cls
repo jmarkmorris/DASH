@@ -12,6 +12,8 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 	// load base tables
 	if (columnar = 0) {
 
+		// Need to redesign the use of globals that keep track of what was loaded because they are overwritten by different suits and also the dummy tables
+
 		// Load TPCH 1G to R tables 
 		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row",indices)
 		
