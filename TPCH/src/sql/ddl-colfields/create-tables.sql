@@ -16,7 +16,7 @@ CREATE TABLE ${schema}REGION${org}  ( R_REGIONKEY  INTEGER NOT NULL WITH STORAGE
 ;
 
 CREATE TABLE ${schema}PART${org}  ( P_PARTKEY     INTEGER NOT NULL WITH STORAGETYPE = COLUMNAR,
-                          P_NAME        VARCHAR(55) NOT NULL WITH STORAGETYPE = COLUMNAR,
+                          P_NAME        VARCHAR(55) NOT NULL,
                           P_MFGR        CHAR(25) NOT NULL WITH STORAGETYPE = COLUMNAR,
                           P_BRAND       CHAR(10) NOT NULL WITH STORAGETYPE = COLUMNAR,
                           P_TYPE        VARCHAR(25) NOT NULL WITH STORAGETYPE = COLUMNAR,
