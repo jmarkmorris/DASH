@@ -46,7 +46,6 @@ LOAD DATA FROM FILE '${data_dir}yellow_tripdata_2020-12.csv'
 	INTO ${schema}NYTaxi${org}
 	USING '{ "from": {"file": {"columnseparator":",", "header": true } } }'
 ;
-
 LOAD DATA FROM FILE '${data_dir}yellow_tripdata_2021-01.csv'
 	INTO ${schema}NYTaxi${org}
 	USING '{ "from": {"file": {"columnseparator":",", "header": true } } }'
