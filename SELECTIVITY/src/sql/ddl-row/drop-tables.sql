@@ -1,6 +1,6 @@
-drop table ${schema}C
+drop table ${schema}C${org}
 ;
 
-drop table ${schema}D
+drop table ${schema}D${org}
 ;
 

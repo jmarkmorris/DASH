@@ -1,25 +1,25 @@
-DROP TABLE ${schema}NATION
+DROP TABLE ${schema}NATION${org}
 ;
 
-DROP TABLE ${schema}REGION
+DROP TABLE ${schema}REGION${org}
 ;
 
-DROP TABLE ${schema}PART
+DROP TABLE ${schema}PART${org}
 ;
 
-DROP TABLE ${schema}SUPPLIER
+DROP TABLE ${schema}SUPPLIER${org}
 ;
 
-DROP TABLE ${schema}PARTSUPP
+DROP TABLE ${schema}PARTSUPP${org}
 ;
 
-DROP TABLE ${schema}CUSTOMER
+DROP TABLE ${schema}CUSTOMER${org}
 ;
 
-DROP TABLE ${schema}ORDERS
+DROP TABLE ${schema}ORDERS${org}
 ;
 
-DROP TABLE ${schema}LINEITEM
+DROP TABLE ${schema}LINEITEM${org}
 ;
 
 
@@ -28,5 +28,4 @@ DROP TABLE ${schema}LINEITEM
 DELETE FROM %SQL_Diag.Message WHERE diagResult->ProcessID NOT IN (select ID from %SYS.ProcessQuery)
 ;
 
-DELETE FROM %SQL_Diag.Result WHERE ProcessID NOT IN (select ID from %SYS.ProcessQuery)
-;
+

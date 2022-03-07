@@ -1,2 +1,2 @@
-TUNE TABLE ${schema}NYTaxi
+TUNE TABLE ${schema}NYTaxi${org}
 ;

@@ -1,2 +1,2 @@
-TUNE TABLE ${schema}DASHLOAD
+TUNE TABLE ${schema}DASHLOAD${org}
 ;
