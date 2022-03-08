@@ -34,8 +34,15 @@ ClassMethod RunTPCH(iterations As %String = "5", verbose As %Boolean = 1) As %St
 		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","Q*", iterations)
 		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","Q*", iterations)
 		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch",,"Q*", iterations) // auto parallel
-
 	}
+
+	Set rgkey = $Order(^%zDashResults(""))
+ 	While (rgkey '= "") {
+		for i = 1:1:^%zDashResults(rgkey) { write !, ^%zDashResults(rgkey,i) }
+		// Find next node
+		Set rgkey = $Order(^%zDashResults(rgkey))
+ 	}
+	kill ^%zDashResults
 }
 
 }
