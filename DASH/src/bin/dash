@@ -186,6 +186,7 @@ do
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
+					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/WriteResults.cls\",\"cuk\")"
 					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
 					echo "do ##class(DASH.Utils).Tune()"
 					echo "The Tune() method will issue an IRIS restart."

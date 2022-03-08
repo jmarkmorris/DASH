@@ -413,9 +413,6 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		#; 		for i = 1:1:^%zDashResults(ResultGroup) { write !, ^%zDashResults(ResultGroup,i) }
 		#; 	}
 		#; }
-
-		// kill ^%zDashResults(ResultGroup)
-
 		
 
 	} catch (ex) {

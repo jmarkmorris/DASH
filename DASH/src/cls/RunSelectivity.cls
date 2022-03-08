@@ -25,12 +25,8 @@ ClassMethod RunSelectivity(iterations As %String = "5", verbose As %Boolean = 1,
 		}
 	}
 
-	Set rgkey = $Order(^%zDashResults(""))
- 	While (rgkey '= "") {
-		for i = 1:1:^%zDashResults(rgkey) { write !, ^%zDashResults(rgkey,i) }
-		// Find next node
-		Set rgkey = $Order(^%zDashResults(rgkey))
- 	}
+	do ##class(WriteResults).WriteResults()
+
 	kill ^%zDashResults
 }
 
