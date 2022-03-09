@@ -380,39 +380,6 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		
         }
 
-		#; if (verbose & iterations) {
-		#; 	if '$FIND(QueryID,"V",1) { // we don't save DashResults rows for Validation queries, so skip them here. ToDo : simplify this spaghetti.
-		#; 		SET myfile = "/nethome/marmorri/DASHBOARD/data/"_$CHANGE($ZTS,",","-")
-		#; 		OPEN myfile:("WEAS"):5 // time out limit of 5 seconds to avoid indefinite wait when myfile cannot be opened
-		#; 		USE myfile
-		#; 		if $FIND(QueryID,"IS",1) {
-		#; 			write !, "server, para, indices, organization, sel org, sel idx, table, ins org, ins idx, run time, build, scale, date, $zh, test"
-		#; 		} else {
-		#; 			if (database = "SelectivityTest") {
-		#; 				write !, "server, para, indices, organization, x, y, z, run time, build, scale, date, $zh, test"
-		#; 			} else {
-		#; 				write !, "server, para, indices, organization, query, run time, build, scale, date, $zh, test"
-		#; 			}
-		#; 		}
-		#; 		for i = 1:1:^%zDashResults(ResultGroup) { write !, ^%zDashResults(ResultGroup,i) }
-		#; 		CLOSE myfile
-		#; 	}
-		#; }
-
-		#; if (verbose & iterations) {
-		#; 	if '$FIND(QueryID,"V",1) { // we don't save DashResults rows for Validation queries, so skip them here. ToDo : simplify this spaghetti.
-		#; 		if $FIND(QueryID,"IS",1) {
-		#; 			write !, "server, para, indices, organization, sel org, sel idx, table, ins org, ins idx, run time, build, scale, date, $zh, test"
-		#; 		} else {
-		#; 			if (database = "SelectivityTest") {
-		#; 				write !, "server, para, indices, organization, x, y, z, run time, build, scale, date, $zh, test"
-		#; 			} else {
-		#; 				write !, "server, para, indices, organization, query, run time, build, scale, date, $zh, test"
-		#; 			}
-		#; 		}
-		#; 		for i = 1:1:^%zDashResults(ResultGroup) { write !, ^%zDashResults(ResultGroup,i) }
-		#; 	}
-		#; }
 		
 
 	} catch (ex) {
