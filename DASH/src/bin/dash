@@ -1,7 +1,7 @@
 PS3="Enter your choice : "
 Servers="1 2 3 4 5 6 7 8 9 10 11 12"
 
-select topic in quit colo-up colo-list colo-stop install DASH tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
+select topic in quit colo-up colo-list colo-url colo-stop install DASH tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
 do
 	echo "DASH is frequently utilized on high performance servers. These processes may not work on laptops."
 	echo "Frequently used commands:"
@@ -71,21 +71,25 @@ do
 		  ;;
 
 		colo-url)
-			iris allw
+			instances=`for i in $Servers
+			do
+        	ssh colobench${i} sudo iris list | egrep  Configuration | sed -e "s/Configuration//"
+			done | sort | uniq | grep "'" | sed -e "s/'//g"`
+
 			echo -n "For a list of SMP urls, enter instance name (or return to continue) : "
-			read IRISINSTNAME
-			if [ -z ${IRISINSTNAME} ]
-			then
-				continue
-			fi
+			select IRISINSTNAME in $instances
+			do
+				echo $IRISINSTNAME
+				break
+			done
 
 			echo "SMP urls :"
 			for i in $Servers
 			do
 				#irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-" | egrep -v "^dn"`
-				irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-"`
+				irisallw=`ssh colobench${i} sudo iris allw | egrep $IRISINSTNAME`
 				if [ "${irisallw}" ]
-							then
+				then
 					SMPport=`ssh colobench${i} iris list ${IRISINSTNAME} | egrep WebServer | sed -e "s/^.*WebServer = //" | sed -e "s/.$//"`
 					echo "http://colobench${i}:${SMPport}/csp/sys/%25CSP.Portal.Home.zen?"
 				fi
@@ -259,15 +263,9 @@ do
 			read repo
 			repo=${repo:-/nethome/marmorri/DASH}
 			echo "repo : ${repo}"
-			iris allw
-			echo -n "Enter instance name : (type return to choose again) : "
-			read IRISINSTNAME
-			if [ -z ${IRISINSTNAME} ]
-			then
-				continue
-			fi
-			echo "iris session ${IRISINSTNAME}"
+			
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/WriteResults.cls\",\"cuk\")"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunTPCH.cls\",\"cuk\")"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
@@ -332,9 +330,6 @@ do
 			repo=${repo:-/nethome/marmorri/DASH}
 			echo "repo : ${repo}"
 			echo "install the instance"
-			echo -n "enter instance name : "
-			read tpchinst
-			echo "iris session ${tpchinst}"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
 			echo "copy and paste one of the following scale and organization combinations."
 			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row\")"
