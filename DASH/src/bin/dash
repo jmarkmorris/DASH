@@ -1,6 +1,7 @@
 PS3="Enter your choice : "
+Servers="1 2 3 4 5 6 7 8 9 10 11 12"
 
-select topic in quit cololist colostop install DASH tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
+select topic in quit colo-up colo-list colo-stop install DASH tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
 do
 	echo "DASH is frequently utilized on high performance servers. These processes may not work on laptops."
 	echo "Frequently used commands:"
@@ -11,9 +12,21 @@ do
 	echo "---------------------------"
 	case $topic in
 	    alerts)
-			/nethome/marmorri/bin/markoalert.sh
+			set -x
+			echo "Enter instance name : "
+			read IRISINSTNAME
+			if [ -z ${IRISINSTNAME} ]
+			then
+				continue
+			fi
+			for i in $Servers
+			do
+				echo colobench$i
+				ssh colobench${i} sudo cat /data/${IRISINSTNAME}/sys/mgr/alerts.log
+			done
 	      ;;
-		colostop)
+
+		colo-stop)
 			iris allw
 			echo -n "Enter instance name : (type return to choose again) : "
 			read IRISINSTNAME
@@ -22,7 +35,7 @@ do
 				continue
 			fi
 			echo "Issuing an iris stop ${IRISINSTNAME}."
-			for i in 1 2 3 4 5 6 7 8 9 10 11 12
+			for i in $Servers
 			do
 				echo colobench$i:
 				rc=`ssh colobench${i} sudo iris list ${IRISINSTNAME} 2>/dev/null`
@@ -34,24 +47,30 @@ do
 			done
 	      ;;
 
-	    cololist)
-			for i in 1 2 3 4 5 6 7 8 9 10 11 12
+	    colo-up)
+			echo "Instances that are up:"
+			for i in $Servers
 			do
 				echo colobench$i:
-				ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-"
-				#ssh colobench${i} sudo free -g
-			done
-			echo
-			echo "Instances that are up:"
-			for i in 1 2 3 4 5 6 7 8 9 10 11 12
-			do
 				irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-" | egrep -v "^dn"`
 				if [ "${irisallw}" ]
-							then
-					echo "colobench${i} : ${irisallw}"
+				then
+					echo "${irisallw}"
 				fi
 
 			done
+		  ;;
+
+		colo-list)
+			echo "All instances"
+			for i in $Servers
+			do
+				echo colobench$i:
+				ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-"
+			done
+		  ;;
+
+		colo-url)
 			iris allw
 			echo -n "For a list of SMP urls, enter instance name (or return to continue) : "
 			read IRISINSTNAME
@@ -61,7 +80,7 @@ do
 			fi
 
 			echo "SMP urls :"
-			for i in 1 2 3 4 5 6 7 8 9 10 11 12
+			for i in $Servers
 			do
 				#irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-" | egrep -v "^dn"`
 				irisallw=`ssh colobench${i} sudo iris allw | egrep -v Directory | egrep -v "\-\-\-\-\-\-"`
@@ -72,131 +91,169 @@ do
 				fi
 			done
 	      ;;
+
 	    shd)
-		/nethome/marmorri/bin/myshd
+			# Change the next two lines that define ROOT directories then run this script to generate the cut and paste commands for SHD.
+			P4ROOT="/nethome/marmorri/Perforce"
+			SHDROOT="/data/dpshd"
+			echo "cd $P4ROOT"
+			echo "p4 sync $P4ROOT/Users/dplotkin/SHD/..."
+			echo "sudo mkdir $SHDROOT"
+			echo "cd $SHDROOT"
+			echo "sudo cp /nethome/dplotkin/SHD/SHD_SQL.tar.gz ."
+			echo "sudo tar -xvf SHD_SQL.tar.gz -C $SHDROOT"
+			echo "change all files in the SHDROOT hierarchy to 777 permissions (needed, but probably overkill)"
+			echo "YL uses sudo bash and doesn't run into these issues"
+			echo "cd /data"
+			echo "sudo chmod -R 777 dpshd"
+			echo "Set the parameters you wish for your test :"
+			echo "vi /data/dpshd/replayer/config/iris/unix/qtemplate/QueuedReplayerRunner.config"
+			echo "Start an IRIS session in the USER namespace and issue the following commands (example instance marko):"
+			echo "iris session marko"
+			echo "set CR = \"$P4ROOT/Users/dplotkin\""
+			echo "set sc = \$system.OBJ.Load(CR_\"/SHD/main/shdsqltestsp4.mac\",\"ck\")"
+			echo "set RD = \"$SHDROOT\""
+			echo "do setupV2^SHDSQLTestsP4(RD, CR)"
+			echo "set NS = \"BILLI\""
+			echo "do \$system.SQL.SetAutoParallelThreshold(3200)"
+			echo "w ^%SYS(\"sql\",\"sys\",\"threshold of auto hinting for %parallel\")"
+			echo "do runSeries^SHDSQLTestsP4(RD,NS)"
+			echo "this command output will continue up to line 566 - which takes around an hour"
+			echo "Set the series IDs you would like to compare :"
+			echo "vi ${SHDROOT}/Stats/Config/StatsConfig.txt"
+			echo "set the results directory to /data/dpshd/replayer/results"
+			echo "set the test ids and file format -- I prefer 99)"
+			echo "do getSummary^SHDSQLTestsP4(RD)"
+			echo "find your results in /data/dpshd/replayer/results"
+			echo "For detailed results run :"
+			echo "do getDetail^SHDSQLTestsP4(RD)"
 	      ;;
+
 	    rtpc)
-		cat /nethome/marmorri/bin/.cheatrtpc
+			cat /nethome/marmorri/bin/.cheatrtpc
 	      ;;
+
 	    PBscale)
-		cat /nethome/marmorri/bin/.cheatpb
+			cat /nethome/marmorri/bin/.cheatpb
 	      ;;
+
 	    install)
-		echo ""
-		echo "select build series"
-		
-		select buildstream in quit 2019.1.2 2020.1.0 2020.4.0SQLSQM 2021.1.0 2021.2.0 2021.3.0SQL 2022.2.0VEC 2022.2.0SQL 2022.2.0L
-		do
-			case $buildstream in
-			2019.1.2)
-				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
-				;;
-			2020.1.0)
-				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
-				;;
-			2020.4.0SQLSQM)
- 				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
-			;;
-			2021.1.0)
-				BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
-				;;
-			2021.2.0)
-				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
-				;;
-			2022.2.0VEC)
-				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
-				;;
-			2021.3.0SQL)
-				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
-				;;
-			2022.2.0SQL)
-				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
-				;;
-			2022.2.0L)
-				BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
-				;;
-			quit)
-				break
-				;;
-			esac
-			echo "builddir = ${BUILDDIR}"
-			echo "select build number"
-			select build in quit `ls ${BUILDDIR} | egrep 20`
+			echo ""
+			echo "select build series"
+			
+			select buildstream in quit 2019.1.2 2020.1.0 2020.4.0SQLSQM 2021.1.0 2021.2.0 2021.3.0SQL 2022.2.0VEC 2022.2.0SQL 2022.2.0L
 			do
-				case $build in
+				case $buildstream in
+				2019.1.2)
+					BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
+					;;
+				2020.1.0)
+					BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
+					;;
+				2020.4.0SQLSQM)
+					BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+				;;
+				2021.1.0)
+					BUILDDIR="/kitsdir/kits.released/IRIS/${buildstream}"
+					;;
+				2021.2.0)
+					BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+					;;
+				2022.2.0VEC)
+					BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+					;;
+				2021.3.0SQL)
+					BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+					;;
+				2022.2.0SQL)
+					BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+					;;
+				2022.2.0L)
+					BUILDDIR="/kitsdir/kits.unreleased/IRIS/${buildstream}"
+					;;
 				quit)
 					break
 					;;
-
-				*)
-					echo "build = ${build}"
-					IRISSRCDIR="${BUILDDIR}/${build}/kits/unix/${build}"
-					echo "irissrcdir = ${IRISSRCDIR}"
-					kitstatus=`curl https://turbo.iscinternal.com/prodlog/releng/api/kits/${build} 2>/dev/null | sed -e "s/^.*kitstatus/kitstatus/" | sed -e "s/,\"name.*//"`
-					echo ${kitstatus}
-					echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH] : "
-					read repo
-					repo=${repo:-/nethome/marmorri/DASH}
-					echo "repo : ${repo}"
-					echo -n "Enter instance name : (type return to choose again) : "
-					read IRISINSTNAME
-					if [ -z ${IRISINSTNAME} ]
-					then
-						continue
-					fi
-					
-					echo "Issuing an iris stop ${IRISINSTNAME}."
-					rc=`sudo iris list ${IRISINSTNAME} 2>/dev/null`
-					if [ -z ${rc} ]
-					then
-						sudo iris stop ${IRISINSTNAME} quietly
-					fi
-
-					IRISBASELOC="/data"
-					IRISKEYLOC="/nethome/marmorri/iriskeys/iris.key"
-					IRISUSERNAME="_SYSTEM"
-					IRISPASSWORD="SYS"
-					IRISGROUP="sys"
-					CURRDIR="$PWD"
-					IRISINSTUPPER=$(echo ${IRISINSTNAME} | tr '[:lower:]' '[:upper:]')
-					IRISINSTLOWER=$(echo ${IRISINSTNAME} | tr '[:upper:]' '[:lower:]')
-					mkdir -p ${IRISBASELOC}
-					IRISINSTLOC=""${IRISBASELOC}/${IRISINSTLOWER}/sys""
-					cd ${IRISSRCDIR}
-					sudo ISC_PACKAGE_PLATFORM=`./cplatname identify` ISC_PACKAGE_INITIAL_SECURITY="Minimal" ISC_PACKAGE_UNICODE=Y ISC_PACKAGE_CACHEUSER=irisusr ISC_PACKAGE_CACHEGROUP=irisusr ISC_PACKAGE_INSTALLDIR=${IRISINSTLOC} ISC_PACKAGE_INSTANCENAME=${IRISINSTUPPER} ISC_PACKAGE_MGRGROUP=${IRISGROUP} ISC_PACKAGE_MGRUSER=${IRISUSERNAME} ISC_PACKAGE_USER_PASSWORD=${IRISPASSWORD} ISC_PACKAGE_STARTCACHE=N ./irisinstall_silent
-					wait
-					sudo cp ${IRISKEYLOC} "${IRISINSTLOC}/mgr/iris.key"
-					sudo iris stop ${IRISINSTUPPER} restart quietly
-					wait
-					echo "Upgrading license..."
-					( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(%SYSTEM.License).Upgrade()' | sed -e "/Username:/d" -e "/Password:/d"
-					echo "Loading utility class..."
-					( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(%SYSTEM.OBJ).Load("/nethome/cgardner/isc-stuff/classes/buildICM.xml","c")'
-					echo "Activating basic services..."
-					( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(Builder.Utils).SetBasicServices(20)' | sed -e "/Username:/d" -e "/Password:/d"
-					sudo iris stop ${IRISINSTUPPER} restart quietly
-					cd ${CURRDIR}
-					iris list ${IRISINSTUPPER}
-					echo ""
-					echo "IRIS install complete."
-					echo "Issue the following commands to tune IRIS configurations, i.e., memory, etc."
-					echo "iris session ${IRISINSTNAME}"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/WriteResults.cls\",\"cuk\")"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunTPCH.cls\",\"cuk\")"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
-					echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
-					echo "do ##class(DASH.Utils).Tune()"
-					echo "The Tune() method will issue an IRIS restart."
-					echo "iris session ${IRISINSTNAME}"
-					echo "do ##class(RunDASH).RunDASH(\"<serverfarm>\")"
-					;;
 				esac
+				echo "builddir = ${BUILDDIR}"
+				echo "select build number"
+				select build in quit `ls ${BUILDDIR} | egrep 20`
+				do
+					case $build in
+					quit)
+						break
+						;;
+
+					*)
+						echo "build = ${build}"
+						IRISSRCDIR="${BUILDDIR}/${build}/kits/unix/${build}"
+						echo "irissrcdir = ${IRISSRCDIR}"
+						kitstatus=`curl https://turbo.iscinternal.com/prodlog/releng/api/kits/${build} 2>/dev/null | sed -e "s/^.*kitstatus/kitstatus/" | sed -e "s/,\"name.*//"`
+						echo ${kitstatus}
+						echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH] : "
+						read repo
+						repo=${repo:-/nethome/marmorri/DASH}
+						echo "repo : ${repo}"
+						echo -n "Enter instance name : (type return to choose again) : "
+						read IRISINSTNAME
+						if [ -z ${IRISINSTNAME} ]
+						then
+							continue
+						fi
+						
+						echo "Issuing an iris stop ${IRISINSTNAME}."
+						rc=`sudo iris list ${IRISINSTNAME} 2>/dev/null`
+						if [ -z ${rc} ]
+						then
+							sudo iris stop ${IRISINSTNAME} quietly
+						fi
+
+						IRISBASELOC="/data"
+						IRISKEYLOC="/nethome/marmorri/iriskeys/iris.key"
+						IRISUSERNAME="_SYSTEM"
+						IRISPASSWORD="SYS"
+						IRISGROUP="sys"
+						CURRDIR="$PWD"
+						IRISINSTUPPER=$(echo ${IRISINSTNAME} | tr '[:lower:]' '[:upper:]')
+						IRISINSTLOWER=$(echo ${IRISINSTNAME} | tr '[:upper:]' '[:lower:]')
+						mkdir -p ${IRISBASELOC}
+						IRISINSTLOC=""${IRISBASELOC}/${IRISINSTLOWER}/sys""
+						cd ${IRISSRCDIR}
+						sudo ISC_PACKAGE_PLATFORM=`./cplatname identify` ISC_PACKAGE_INITIAL_SECURITY="Minimal" ISC_PACKAGE_UNICODE=Y ISC_PACKAGE_CACHEUSER=irisusr ISC_PACKAGE_CACHEGROUP=irisusr ISC_PACKAGE_INSTALLDIR=${IRISINSTLOC} ISC_PACKAGE_INSTANCENAME=${IRISINSTUPPER} ISC_PACKAGE_MGRGROUP=${IRISGROUP} ISC_PACKAGE_MGRUSER=${IRISUSERNAME} ISC_PACKAGE_USER_PASSWORD=${IRISPASSWORD} ISC_PACKAGE_STARTCACHE=N ./irisinstall_silent
+						wait
+						sudo cp ${IRISKEYLOC} "${IRISINSTLOC}/mgr/iris.key"
+						sudo iris stop ${IRISINSTUPPER} restart quietly
+						wait
+						echo "Upgrading license..."
+						( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(%SYSTEM.License).Upgrade()' | sed -e "/Username:/d" -e "/Password:/d"
+						echo "Loading utility class..."
+						( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(%SYSTEM.OBJ).Load("/nethome/cgardner/isc-stuff/classes/buildICM.xml","c")'
+						echo "Activating basic services..."
+						( echo "${IRISUSERNAME}"; echo "${IRISPASSWORD}" ) | irissession ${IRISINSTUPPER} -U %SYS '##class(Builder.Utils).SetBasicServices(20)' | sed -e "/Username:/d" -e "/Password:/d"
+						sudo iris stop ${IRISINSTUPPER} restart quietly
+						cd ${CURRDIR}
+						iris list ${IRISINSTUPPER}
+						echo ""
+						echo "IRIS install complete."
+						echo "Issue the following commands to tune IRIS configurations, i.e., memory, etc."
+						echo "iris session ${IRISINSTNAME}"
+						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/WriteResults.cls\",\"cuk\")"
+						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunTPCH.cls\",\"cuk\")"
+						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
+						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
+						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
+						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
+						echo "do ##class(DASH.Utils).Tune()"
+						echo "The Tune() method will issue an IRIS restart."
+						echo "iris session ${IRISINSTNAME}"
+						echo "do ##class(RunDASH).RunDASH(\"<serverfarm>\")"
+						;;
+					esac
+				done
 			done
-		done
 	      ;;
+
 		DASH)
 			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH] : "
 			read repo
@@ -218,157 +275,170 @@ do
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
 			echo "do ##class(RunDASH).RunDASH(\"<serverfarm>\")"
 		  ;;
+
 	    MONLBL)
-		echo "DASH benchmarks perform a MONLBL if the iteration count is specified as 0, e.g.,"
-		echo "do ##class(DASH.Utils).Run(\"/nethome/marmorri/DASH/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"0\")"
+			echo "DASH benchmarks perform a MONLBL if the iteration count is specified as 0, e.g.,"
+			echo "do ##class(DASH.Utils).Run(\"/nethome/marmorri/DASH/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"0\")"
 		  ;;
+
 		oldMONLBL)
-		echo "Steps to perform a MONLBL manually :"
-		echo "Enable 'Retain Cached Query Source' in SMP."
-		echo "Run the test so that the queries will be cached."
-		echo "Start an IRIS session in the namespace where the routines to trace are located."
-		echo "Do ^%SYS.MONLBL"
-		echo "%sqlcq* : is a wildcard for all cached queries routines and will also pick up parallel workers with hashed class names."
-		echo "%sqlcq.SHARDMASTER.cls3.* : a specific routine, but won't pick up the parallel workers"
-		echo "Save output to a csv file. : 6.) Report - Delimited (CSV) Output"
-		echo "Import into Excel for analysis."
+			echo "Steps to perform a MONLBL manually :"
+			echo "Enable 'Retain Cached Query Source' in SMP."
+			echo "Run the test so that the queries will be cached."
+			echo "Start an IRIS session in the namespace where the routines to trace are located."
+			echo "Do ^%SYS.MONLBL"
+			echo "%sqlcq* : is a wildcard for all cached queries routines and will also pick up parallel workers with hashed class names."
+			echo "%sqlcq.SHARDMASTER.cls3.* : a specific routine, but won't pick up the parallel workers"
+			echo "Save output to a csv file. : 6.) Report - Delimited (CSV) Output"
+			echo "Import into Excel for analysis."
 	      ;;
+
 	    SQL)
-		echo "Do \$SYSTEM.SQL.Shell()"
-		echo "Up arrow works in both SQL and ObjectScript shells."
-		echo "? : Displays help"
-		echo "browse : Browse the schemas, tables, views, fields, and map definitions in this namespace."
-		echo "! <objscr command>"
-		echo "g[o] : Run the most recently executed or loaded statement."
-		echo "l[ist] : List saved queries." 
-		echo "p[urge] : Purge all cached queries in this namespace."
-		echo "run [<filename>] : Run an SQL script."
-		echo "ALTER TABLE schema.TableName RENAME NewTableName"
-		echo "Do \$SYSTEM.SQL.Schema.ExportDDL(\"schema or *\",\"table or *\",\"/tmp/myddl\")"
+			echo "Do \$SYSTEM.SQL.Shell()"
+			echo "Up arrow works in both SQL and ObjectScript shells."
+			echo "? : Displays help"
+			echo "browse : Browse the schemas, tables, views, fields, and map definitions in this namespace."
+			echo "! <objscr command>"
+			echo "g[o] : Run the most recently executed or loaded statement."
+			echo "l[ist] : List saved queries." 
+			echo "p[urge] : Purge all cached queries in this namespace."
+			echo "run [<filename>] : Run an SQL script."
+			echo "ALTER TABLE schema.TableName RENAME NewTableName"
+			echo "Do \$SYSTEM.SQL.Schema.ExportDDL(\"schema or *\",\"table or *\",\"/tmp/myddl\")"
 	      ;;
+
 	    tpch-query-text)
-		echo "Display TPCH query text : "
-		a=`pwd`
-		cd /nethome/marmorri/benchmark/TPCH/src/sql/queries
-		select query in quit `ls Q*`
-		do
-		    case $query in
-		    quit)
-		      break
-		      ;;
-		    *) 
-		      cat /nethome/marmorri/DASH/TPCH/src/sql/queries/$query
-		      ;;
-	            esac
-		done
-		cd $a
+			echo "Display TPCH query text : "
+			a=`pwd`
+			cd /nethome/marmorri/benchmark/TPCH/src/sql/queries
+			select query in quit `ls Q*`
+			do
+				case $query in
+				quit)
+				break
+				;;
+				*) 
+				cat /nethome/marmorri/DASH/TPCH/src/sql/queries/$query
+				;;
+					esac
+			done
+			cd $a
 	      ;;
+
 	    tpch-benchmark)
-		echo "clone the DASH repo from GitHub"
-		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-		read repo
-		repo=${repo:-/nethome/marmorri/DASH}
-		echo "repo : ${repo}"
-		echo "install the instance"
-		echo -n "enter instance name : "
-        read tpchinst
-		echo "iris session ${tpchinst}"
-		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-		echo "copy and paste one of the following scale and organization combinations."
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-coltable\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-colfields\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row-id\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-coltable\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-colfields\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row-id\")"
-		echo "use test name pattern matching to run the benchmark as follows."
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q01*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q02*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q01*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
+			echo "clone the DASH repo from GitHub"
+			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
+			read repo
+			repo=${repo:-/nethome/marmorri/DASH}
+			echo "repo : ${repo}"
+			echo "install the instance"
+			echo -n "enter instance name : "
+			read tpchinst
+			echo "iris session ${tpchinst}"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+			echo "copy and paste one of the following scale and organization combinations."
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-coltable\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-colfields\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row-id\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-coltable\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-colfields\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row-id\")"
+			echo "use test name pattern matching to run the benchmark as follows."
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q01*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q02*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q01*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
 	      ;;
+
 	    micro-benchmark)
-		echo "clone the DASH repo from GitHub"
-		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-		read repo
-		repo=${repo:-/nethome/marmorri/DASH}
-		echo "repo : ${repo}"
-		echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
-		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"all\",\"5\")"
+			echo "clone the DASH repo from GitHub"
+			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
+			read repo
+			repo=${repo:-/nethome/marmorri/DASH}
+			echo "repo : ${repo}"
+			echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"all\",\"5\")"
 	      ;;
+
 	    NYTaxi-benchmark)
-		echo "clone the DASH repo from GitHub"
-		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-		read repo
-		repo=${repo:-/nethome/marmorri/DASH}
-		echo "repo : ${repo}"
-		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-coltable\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-colfields\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q01*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q02*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q01*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q02*\", \"1\")"
+			echo "clone the DASH repo from GitHub"
+			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
+			read repo
+			repo=${repo:-/nethome/marmorri/DASH}
+			echo "repo : ${repo}"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-coltable\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-colfields\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q01*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q02*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q01*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q02*\", \"1\")"
 		;;
+
 	    selectivity-benchmark)
-		echo "clone the DASH repo from GitHub"
-		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-		read repo
-		repo=${repo:-/nethome/marmorri/DASH}
-		echo "repo : ${repo}"
-		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-coltable\")"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-colfields\")"
-		echo "Queries are of the form below where X,Y,Z are the tags in the query id."
-		echo "select AVG(C.RowNUM) FROM C JOIN D ON C.selX = 0 AND D.selY = 0 AND C.selZ = D.selZ"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%NOPARALLEL\",\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%PARALLEL\",\"Q*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5-10*\", \"1\")"
-		echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-20-20-20*\", \"1\")"
+			echo "clone the DASH repo from GitHub"
+			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
+			read repo
+			repo=${repo:-/nethome/marmorri/DASH}
+			echo "repo : ${repo}"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-coltable\")"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-colfields\")"
+			echo "Queries are of the form below where X,Y,Z are the tags in the query id."
+			echo "select AVG(C.RowNUM) FROM C JOIN D ON C.selX = 0 AND D.selY = 0 AND C.selZ = D.selZ"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%NOPARALLEL\",\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%PARALLEL\",\"Q*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5-10*\", \"1\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-20-20-20*\", \"1\")"
 		;;
+
 	    load-benchmark)
-		echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-		read repo
-		repo=${repo:-/nethome/marmorri/DASH}
-		echo "repo : ${repo}"
-		echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-		echo "do ##class(DASH.Utils).RunLoads()"
-		echo "do ##class(DASH.Utils).GenerateData()"
-		echo "do ##class(DASH.Utils).Load(\"${repo}/LOAD\",\"load\",\"\",\"1\",\"ddl-row\")"
+			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
+			read repo
+			repo=${repo:-/nethome/marmorri/DASH}
+			echo "repo : ${repo}"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
+			echo "do ##class(DASH.Utils).RunLoads()"
+			echo "do ##class(DASH.Utils).GenerateData()"
+			echo "do ##class(DASH.Utils).Load(\"${repo}/LOAD\",\"load\",\"\",\"1\",\"ddl-row\")"
 		;;
+
 		sharding)
-		echo "zw \$SYSTEM.Cluster.Initialize(\"RB\",\"RB-MASTER\")"
-		echo "zw \$system.Cluster.ListNodes()"
-		echo "zw \$SYSTEM.Cluster.AttachAsComputeNode(\"IRIS://colobench1-p1:1972/RB\")"
-		echo "zw \$SYSTEM.Cluster.AttachAsDataNode(\"IRIS://colobench1-p1:1972/RB\")"
-		echo "set ^IRIS.SM(\"rbprogress\")=1"
-		echo "zw \$system.Sharding.Rebalance(,0,.report)"
-		echo "s ^IRIS.SM(\"rbpause\")=3"
-		echo "s ^IRIS.SM(\"rbpause\")=\"5a\""
+			echo "zw \$SYSTEM.Cluster.Initialize(\"RB\",\"RB-MASTER\")"
+			echo "zw \$system.Cluster.ListNodes()"
+			echo "zw \$SYSTEM.Cluster.AttachAsComputeNode(\"IRIS://colobench1-p1:1972/RB\")"
+			echo "zw \$SYSTEM.Cluster.AttachAsDataNode(\"IRIS://colobench1-p1:1972/RB\")"
+			echo "set ^IRIS.SM(\"rbprogress\")=1"
+			echo "zw \$system.Sharding.Rebalance(,0,.report)"
+			echo "s ^IRIS.SM(\"rbpause\")=3"
+			echo "s ^IRIS.SM(\"rbpause\")=\"5a\""
 	      ;;
+
 	    quit)
 	      break
 	      ;;
+
 	    *) 
 	      echo "Invalid option $REPLY"
 	      ;;
+
 	  esac
 done
