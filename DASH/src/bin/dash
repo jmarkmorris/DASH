@@ -13,12 +13,18 @@ do
 	case $topic in
 	    alerts)
 			set -x
-			echo "Enter instance name : "
-			read IRISINSTNAME
-			if [ -z ${IRISINSTNAME} ]
-			then
-				continue
-			fi
+
+			instances=`for i in $Servers
+			do
+        	ssh colobench${i} sudo iris list | egrep  Configuration | sed -e "s/Configuration//"
+			done | sort | uniq | grep "'" | sed -e "s/'//g"`
+
+			select IRISINSTNAME in $instances
+			do
+				echo $IRISINSTNAME
+				break
+			done
+
 			for i in $Servers
 			do
 				echo colobench$i
@@ -27,13 +33,18 @@ do
 	      ;;
 
 		colo-stop)
-			iris allw
-			echo -n "Enter instance name : (type return to choose again) : "
-			read IRISINSTNAME
-			if [ -z ${IRISINSTNAME} ]
-			then
-				continue
-			fi
+			echo -n "Select instance : "
+			instances=`for i in $Servers
+			do
+        	ssh colobench${i} sudo iris list | egrep  Configuration | sed -e "s/Configuration//"
+			done | sort | uniq | grep "'" | sed -e "s/'//g"`
+
+			select IRISINSTNAME in $instances
+			do
+				echo $IRISINSTNAME
+				break
+			done
+			
 			echo "Issuing an iris stop ${IRISINSTNAME}."
 			for i in $Servers
 			do

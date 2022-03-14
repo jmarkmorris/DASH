@@ -162,7 +162,7 @@ ClassMethod GenerateData (records As %Integer = 1000000, verbose As %Boolean = 1
 	write !, "Generating data for the Load1m tests"
 
 	// This is to delete any data records before calling Populate.
-	set sc = ##class(DASH.Utils).DeleteData()
+	Do ##class(DASH.Utils).%KillExtent()
 	
 	// generate the data in a table with populate
 	set RecordCount = ##class(DASH.Utils).Populate(records,0 /* verbose */,1 /* Defer indices */,,0 /* Don't do tune table */ ,1 /* deterministic */) 
