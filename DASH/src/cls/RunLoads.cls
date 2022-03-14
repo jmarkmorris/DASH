@@ -160,6 +160,9 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 ClassMethod GenerateData (records As %Integer = 1000000, verbose As %Boolean = 1) As %Status
 {
 	write !, "Generating data for the Load1m tests"
+
+	// This is to delete any data records before calling Populate.
+	set sc = ##class(DASH.Utils).DeleteData()
 	
 	// generate the data in a table with populate
 	set RecordCount = ##class(DASH.Utils).Populate(records,0 /* verbose */,1 /* Defer indices */,,0 /* Don't do tune table */ ,1 /* deterministic */) 
