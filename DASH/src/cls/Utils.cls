@@ -14,6 +14,7 @@ Property field9 As %Library.TimeStamp;
 
 ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1, shardkey As %String = "", org As %String = "") As %Status [ SqlName = Load, SqlProc ]
 {
+	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = ##class(%SYS.System).GetNodeName(1)_","_"Load()"_","_path_","_database_","_schema_","_scale_","_ddl_","_useindices_","_verbose_","_shardkey_","_org_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
@@ -102,10 +103,10 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 			set ^%zDASH.Global(database,"ddl") = ddl
 			set ^%zDASH.Global(database,"indices") = indices
 
-			write !, "schema = ", ^%zDASH.Global(database,"schema")
-			write !, "scale = ", ^%zDASH.Global(database,"scale")
-			write !, "ddl = ", ^%zDASH.Global(database,"ddl")
-			write !, "indices = ", ^%zDASH.Global(database,"indices")
+			write !, "LOAD : schema = ", ^%zDASH.Global(database,"schema")
+			write !, "LOAD : scale = ", ^%zDASH.Global(database,"scale")
+			write !, "LOAD : ddl = ", ^%zDASH.Global(database,"ddl")
+			write !, "LOAD : indices = ", ^%zDASH.Global(database,"indices")
 
 			
 			// Perform data validation tests.
@@ -114,6 +115,8 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 			if ('ValidData) {
 				write:verbose !,"Data failed validation tests. Data not loaded."
+				set ResultGroup = "Error"
+				set ^%zDashResults(ResultGroup,$i(^%zDashResults(ResultGroup))) = ##class(%SYS.System).GetNodeName(1)_","_database_","_indices_","_ddl_","_"validation query"_","_"0"_","_$zv_","_scale_","_$ZDATE($HOROLOG)_","_$ZH_","_ResultGroup
 				
 				// If the data is invalid, set the %zDASH.Global data state for this database to the equivalent of empty, print an error, and continue.
 				set ^%zDASH.Global(database,"schema") = ""
@@ -127,10 +130,6 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 			}
 		}
 
-		#; if verbose {
-		#; 	write !, "server, benchmark, indices, organization, query, run time, build, scale, date, $zh, test"
-		#; 	for i = 1:1:^%zDashResults(ResultGroup) { write !, ^%zDashResults(ResultGroup,i) }
-		#; }
 
 	} catch (ex) {
 		set sc = ex.AsStatus()
@@ -144,6 +143,8 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "Q*", iterations As %String = "5", verbose As %Boolean = 1, org As %String = "", ByRef ValidData As %Boolean) As %Status
 {
+	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = ##class(%SYS.System).GetNodeName(1)_","_"Run()"_","_path_","_database_","_parasetting_","_query_","_iterations_","_verbose_","_org_","_ValidData_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+
 	set ResultGroup = database
 	
 	write !, "RUN : database = ", database
@@ -153,7 +154,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	write !, "RUN : indices = ", ^%zDASH.Global(database,"indices")
 	
 	// Exit if no data is loaded for this database
-	if ('$DATA(^%zDASH.Global(database,"ddl"))) {
+	if (^%zDASH.Global(database,"ddl")="") {
 		write !, "RUN : Table data has not been loaded."
 		quit
 	}
@@ -394,7 +395,9 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 ClassMethod RunSQL(file As %String, QueryID As %String, ByRef replace As %String, IgnoreErrors As %Boolean = 0, verbose As %Boolean = 1, ByRef statement, DoPrepare As %Boolean = 1, DoExplain As %Boolean = 0, ByRef ValidData As %Boolean) As %Status
 {
-    write !, "RunSQL ", file
+    set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = ##class(%SYS.System).GetNodeName(1)_","_"RunSQL()"_","_file_","_QueryID_","_replace_","_IgnoreErrors_","_verbose_","_statement_","_DoPrepare_","_DoExplain_","_ValidData_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+
+	write !, "RunSQL ", file
 	set sc = $$$OK
     try {
         set sep = $s($$$isWINDOWS:"\",1:"/")
