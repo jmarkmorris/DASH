@@ -14,7 +14,10 @@ Property field9 As %Library.TimeStamp;
 
 ClassMethod Load(path As %String = "", database As %String = "", schema As %String = "", scale As %String = "1", ddl As %String = "ddl-row", useindices As %Boolean = 1, verbose As %Boolean = 1, shardkey As %String = "", org As %String = "") As %Status [ SqlName = Load, SqlProc ]
 {
-	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = ##class(%SYS.System).GetNodeName(1)_","_"Load()"_","_path_","_database_","_schema_","_scale_","_ddl_","_useindices_","_verbose_","_shardkey_","_org_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+	set logstring = ##class(%SYS.System).GetNodeName(1)_","_"Load()"_","_path_","_database_","_schema_","_scale_","_ddl_","_useindices_","_verbose_","_shardkey_","_org_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+    write !, logstring
+	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = logstring
+
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
@@ -143,7 +146,9 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 
 ClassMethod Run(path As %String = "", database As %String = "", parasetting As %String = "", query As %String = "Q*", iterations As %String = "5", verbose As %Boolean = 1, org As %String = "", ByRef ValidData As %Boolean) As %Status
 {
-	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = ##class(%SYS.System).GetNodeName(1)_","_"Run()"_","_path_","_database_","_parasetting_","_query_","_iterations_","_verbose_","_org_","_ValidData_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+	set logstring = ##class(%SYS.System).GetNodeName(1)_","_"Run()"_","_path_","_database_","_parasetting_","_query_","_iterations_","_verbose_","_org_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+    write !, logstring
+	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = logstring
 
 	set ResultGroup = database
 	
@@ -395,9 +400,10 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 ClassMethod RunSQL(file As %String, QueryID As %String, ByRef replace As %String, IgnoreErrors As %Boolean = 0, verbose As %Boolean = 1, ByRef statement, DoPrepare As %Boolean = 1, DoExplain As %Boolean = 0, ByRef ValidData As %Boolean) As %Status
 {
-    set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = ##class(%SYS.System).GetNodeName(1)_","_"RunSQL()"_","_file_","_QueryID_","_replace_","_IgnoreErrors_","_verbose_","_statement_","_DoPrepare_","_DoExplain_","_ValidData_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+    set logstring = ##class(%SYS.System).GetNodeName(1)_","_"RunSQL()"_","_file_","_QueryID_","_IgnoreErrors_","_verbose_","_DoPrepare_","_DoExplain_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+    write !, logstring
+	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = logstring
 
-	write !, "RunSQL ", file
 	set sc = $$$OK
     try {
         set sep = $s($$$isWINDOWS:"\",1:"/")
