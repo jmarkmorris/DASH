@@ -1,2 +1,2 @@
-select sum(field3) - 48088994403 + 1 as Valid from DASHLOAD
+select sum(field2) -5000817933.0621 + 1 as Valid from DASHLOAD
 ;

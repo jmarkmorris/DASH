@@ -165,7 +165,7 @@ ClassMethod GenerateData (records As %Integer = 1000000, verbose As %Boolean = 1
 	Do ##class(DASH.Utils).%KillExtent()
 	
 	// generate the data in a table with populate
-	set RecordCount = ##class(DASH.Utils).Populate(records,0 /* verbose */,1 /* Defer indices */,,0 /* Don't do tune table */ ,1 /* deterministic */) 
+	set RecordCount = ##class(DASH.Utils).Populate(records,0 /* verbose */,1 /* Defer indices */,/* objects */,0 /* Don't do tune table */ ,1 /* deterministic */) 
 	write !, "Records requested : "_records
 	write !, "Records populated : "_RecordCount,!
 
@@ -175,9 +175,33 @@ ClassMethod GenerateData (records As %Integer = 1000000, verbose As %Boolean = 1
 	for i = 1:1:RecordCount {
 		Set oref =##class(DASH.Utils).%OpenId(i)
 		// Populate puts a string such as J3546 in the Binary field1. Replace it with alternating 0, 1 pattern.
-		write i#2_"|"_oref.field2_"|"_oref.field3_"|"_oref.field4_"|"_oref.field5_"|"_oref.field6_"|"_oref.field7_"|"_oref.field8_"|"_oref.field9_"|",!
+		write (i # 2)_"|"_oref.field2_"|"_oref.field3_"|"_oref.field4_"|"_oref.field5_"|"_oref.field6_"|"_oref.field7_"|"_oref.field8_"|"_oref.field9_"|",!
 	}
 	CLOSE myfile
+
+}
+
+ClassMethod IsoPop (records As %Integer = 1000000, verbose As %Boolean = 1) As %Status
+{
+	write !, "Generating data for the Load1m tests"
+
+	for j = 1:1:10000 {
+
+		// This is to delete any data records before calling Populate.
+		Do ##class(DASH.Utils).%KillExtent()
+		
+		// generate the data in a table with populate
+		set RecordCount = ##class(DASH.Utils).Populate(records,0 /* verbose */,1 /* Defer indices */,/* objects */,0 /* Don't do tune table */ ,1 /* deterministic */) 
+
+		for i = 1:1:5 {
+			Set oref =##class(DASH.Utils).%OpenId(i)
+			// Populate puts a string such as J3546 in the Binary field1. Replace it with alternating 0, 1 pattern.
+			write !, $ZDATETIME($HOROLOG,3,1,0)_" : "_j_"|"_(i # 2)_"|"_oref.field2_"|"_oref.field3_"|"_oref.field4_"|"_oref.field5_"|"_oref.field6_"|"_oref.field7_"|"_oref.field8_"|"_oref.field9_"|"
+		}
+
+		hang 60
+
+	}
 
 }
 

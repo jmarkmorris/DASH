@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#total_times=147500000
+total_times=1000000
+
+# duration in minutes to drive 1 mile
+time_for_mile=1
+
+for milesdriven in 1 5 10 25 50 75 100 125 150 175
+{
+export distance_traveled=`echo $time_for_mile \* $milesdriven | bc -l`
+for ((i=1; i <= $total_times; i=i+1))
+   do
+    echo $milesdriven,$distance_traveled,"7"
+   done
+}
