@@ -16,6 +16,7 @@ ClassMethod RunDASH(serverfarm As %String = "", iterations As %String = "5", ver
   if (servernum = 6) {do ##class(RunNYTaxi).RunNYTaxi(iterations, verbose)}
   if (servernum = 7) {do ##class(RunLoads).RunLoads(iterations, verbose,0,0)}
   if (servernum = 8) {do ##class(RunLoads).RunLoads(iterations, verbose,0,1)}
+  if (servernum = 9) {do ##class(RunMicro).RunMicro(iterations, verbose)}
   if (servernum = 10) {do ##class(RunLoads).RunLoads(iterations, verbose,1,1)}
   if (servernum = 12) {do ##class(RunLoads).RunLoads(iterations, verbose,1,0)}
 

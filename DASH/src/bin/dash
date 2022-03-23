@@ -282,6 +282,7 @@ do
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
+			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunMicro.cls\",\"cuk\")"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
 			echo "do ##class(RunDASH).RunDASH(\"<serverfarm>\")"
 		  ;;
@@ -372,7 +373,7 @@ do
 			echo "repo : ${repo}"
 			echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"all\",\"5\")"
+			echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"Q*\",\"5\")"
 	      ;;
 
 	    NYTaxi-benchmark)

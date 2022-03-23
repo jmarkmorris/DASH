@@ -151,6 +151,13 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = logstring
 
 	set ResultGroup = database
+
+	if (database = "objectscript") {
+		set ^%zDASH.Global(database,"schema") = "n.a."
+		set ^%zDASH.Global(database,"scale") = "n.a."
+		set ^%zDASH.Global(database,"ddl") = "n.a."
+		set ^%zDASH.Global(database,"indices") = "n.a."
+	}
 	
 	write !, "RUN : database = ", database
 	write !, "RUN : schema = ", ^%zDASH.Global(database,"schema")
@@ -178,7 +185,10 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		set variables("parasetting") = parasetting
 		set variables("org") = org
 		set InvokedFromNamespace = $znspace
+
+		// write !, "Before use db attempt"
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
+		// write !, "After use db attempt"
 
 		set ListDirStatement = ##class(%SQL.Statement).%New()
     	set status = ListDirStatement.%PrepareClassQuery("%File", "FileSet")
@@ -191,6 +201,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 		// match all query files in the directory, regardless of their extension.
 		set ResultSet = ListDirStatement.%Execute(path_"src"_separator_"sql"_separator_"queries"_separator, query, "Name") 
 
+		// write !, "Before loop through list of queries"
     	while ResultSet.%Next() {
         	set QueryID = ResultSet.%Get("ItemName")
 			write !,"QueryID = ", QueryID
@@ -336,6 +347,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 						set StepStart = $zh
 						set sc = ..RunObjScr(path_"src"_separator_"sql"_separator_"queries"_separator_QueryID_".cls", 1, .elapsed)
 						set StepEnd = $zh
+						write !, "After RunObjScr elapsed = "_elapsed_" ResultGroup = "_ResultGroup
 						if elapsed > 0 {
 							set ^%zDashResults(ResultGroup,$i(^%zDashResults(ResultGroup))) = ##class(%SYS.System).GetNodeName(1)_","_parasetting_","_^%zDASH.Global(database,"indices")_","_^%zDASH.Global(database,"ddl")_","_QueryID_","_$fn(elapsed,,3)_","_$zv_","_^%zDASH.Global(database,"scale")_","_$ZDATE($HOROLOG)_","_$ZH_","_database
 						} else {
@@ -566,7 +578,9 @@ ClassMethod RunSQL(file As %String, QueryID As %String, ByRef replace As %String
 
 ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As %Float = 0.0) As %Status
 {
-    write !, "RunObjScr ", file
+    set logstring = ##class(%SYS.System).GetNodeName(1)_","_"RunObjScr()"_","_file_","_verbose_","_$zv_","_$ZDATE($HOROLOG)_","_$ZH_","_"Log"
+    write !, logstring
+	set ^%zDashResults("Log",$i(^%zDashResults("Log"))) = logstring
 	set sc = $$$OK
     try {        
         do $SYSTEM.OBJ.Load(file,"cuk")  
@@ -585,7 +599,6 @@ ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As
         write:verbose !,"Unexpected error: ",$system.Status.GetOneErrorText(sc)
     }
 	//write !,"after catch block"
-
 	write:verbose !
     quit sc
 }
