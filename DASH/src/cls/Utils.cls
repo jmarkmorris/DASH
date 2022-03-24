@@ -385,7 +385,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 						} else {
 							set QueryDescriptor = QueryID
-							if (database = "SelectivityTest") {
+							if (database = "Selectivity") {
 									set QueryDescriptor = $REPLACE(QueryID,"-",",",3)  // Remove the "Q- and convert the other "-" to ","
 							}
 						}
@@ -630,6 +630,7 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 
 	quit $$$OK
 }
+
 
 
 // ClassMethod P(a As %Integer, b As %Integer, c As %Integer) As %Integer [ Language = objectscript ]

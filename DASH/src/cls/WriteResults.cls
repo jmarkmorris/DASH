@@ -12,7 +12,7 @@ ClassMethod WriteResults() As %Status
 	#; if $FIND(QueryID,"IS",1) {
 	#; 	write !, "server, para, indices, organization, sel org, sel idx, table, ins org, ins idx, run time, build, scale, date, $zh, test"
 	#; } else {
-	#; 	if (database = "SelectivityTest") {
+	#; 	if (database = "Selectivity") {
 	#; 		write !, "server, para, indices, organization, x, y, z, run time, build, scale, date, $zh, test"
 	#; 	} else {
 	#; 		write !, "server, para, indices, organization, query, run time, build, scale, date, $zh, test"
