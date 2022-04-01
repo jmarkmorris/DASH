@@ -62,6 +62,11 @@ do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/DashMenu.cls","cuk")
 		} elseif (choice1 = 4) { // run an individual query in the context of a suite and physical design (i.e., columnar, indices)
 			// not yet implemented
 			continue
+		} elseif (choice1 = 5) {
+			set serverfarm =  $TRANSLATE(##class(%SYS.System).GetNodeName(1),"1234567890")
+			do ##class(RunDASH).RunDASH(serverfarm)
+			continue
+
 		} elseif (choice1 = 1) {
 			set exit = 1
 			continue
@@ -83,6 +88,7 @@ ClassMethod Menu1() As %Integer [ Language = objectscript ]
 	write !, "2) Load DASH classes"
 	write !, "3) Select DASH benchmark suite and load data"
 	write !, "4) Issue DASH benchmark query"
+	write !, "5) Run DASH suite assigned to this server"
 	return 1
 }
 

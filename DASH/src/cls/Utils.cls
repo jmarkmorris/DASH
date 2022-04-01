@@ -633,13 +633,22 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 
 
 
-// ClassMethod P(a As %Integer, b As %Integer, c As %Integer) As %Integer [ Language = objectscript ]
-// {
-// 	// attempting to see if keyword arguments are supported like P(a=3, b=2, c=1) but that syntax does not work.
-// 	write !, "a = ", a
-// 	write !, "b = ", b
-// 	write !, "c = ", c
-// }
+ClassMethod DashInit() As %Status
+{
+	// do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/Utils.cls","cuk")
+	// do ##class(DASH.Utils).DashInit()
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/WriteResults.cls","cuk")
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunTPCH.cls","cuk")
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunNYTaxi.cls","cuk")
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunLoads.cls","cuk")
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunSelectivity.cls","cuk")
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunMicro.cls","cuk")
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunDASH.cls","cuk")
+	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/DashMenu.cls","cuk")
+	set rc = $CLASSMETHOD("DashMenu","DashMenu")
+
+
+}
 
 
 

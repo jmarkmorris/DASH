@@ -1,7 +1,7 @@
 PS3="Enter your choice : "
 Servers="1 2 3 4 5 6 7 8 9 10 11 12"
 
-select topic in quit colo-up colo-list colo-url colo-stop install DASH tpch-benchmark tpch-query-text NYTaxi-benchmark micro-benchmark selectivity-benchmark load-benchmark MONLBL SQL sharding rtpc shd
+select topic in quit colo-alerts colo-up colo-list colo-url colo-stop install DASH tpch-query-text MONLBL SQL sharding rtpc shd
 do
 	echo "DASH is frequently utilized on high performance servers. These processes may not work on laptops."
 	echo "Frequently used commands:"
@@ -12,9 +12,7 @@ do
 	echo "tmux, start your test, CTRL-b, then d, tmux list-sessions, tmux attach, To display the history of the pane issue : tmux capture-pane -p -S - -t <session>"
 	echo "---------------------------"
 	case $topic in
-	    alerts)
-			set -x
-
+	    colo-alerts)
 			instances=`for i in $Servers
 			do
         	ssh colobench${i} sudo iris list | egrep  Configuration | sed -e "s/Configuration//"
@@ -251,21 +249,13 @@ do
 						iris list ${IRISINSTUPPER}
 						echo ""
 						echo "IRIS install complete."
-						echo "Issue the following commands to tune IRIS configurations, i.e., memory, etc."
+						echo "Issue the following commands to tune the IRIS configurations, i.e., memory, etc."
 						echo "iris session ${IRISINSTNAME}"
 						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/WriteResults.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunTPCH.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunMicro.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
-						echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/DashMenu.cls\",\"cuk\")"
 						echo "do ##class(DASH.Utils).Tune()"
 						echo "The Tune() method will issue an IRIS restart."
 						echo "iris session ${IRISINSTNAME}"
-						echo "do ##class(RunDASH).RunDASH(\"<serverfarm>\")"
+						echo "do ##class(DASH.Utils).DashInit()"
 						;;
 					esac
 				done
@@ -277,16 +267,8 @@ do
 			read repo
 			repo=${repo:-/nethome/marmorri/DASH}
 			echo "repo : ${repo}"
-			
 			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/WriteResults.cls\",\"cuk\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunTPCH.cls\",\"cuk\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunNYTaxi.cls\",\"cuk\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunLoads.cls\",\"cuk\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunSelectivity.cls\",\"cuk\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunMicro.cls\",\"cuk\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/RunDASH.cls\",\"cuk\")"
-			echo "do ##class(RunDASH).RunDASH(\"<serverfarm>\")"
+			echo "do ##class(DASH.Utils).DashInit()"
 		  ;;
 
 	    MONLBL)
@@ -338,98 +320,6 @@ do
 			cd $a
 	      ;;
 
-	    tpch-benchmark)
-			echo "clone the DASH repo from GitHub"
-			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-			read repo
-			repo=${repo:-/nethome/marmorri/DASH}
-			echo "repo : ${repo}"
-			echo "install the instance"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-			echo "copy and paste one of the following scale and organization combinations."
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-coltable\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-colfields\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"1\",\"ddl-row-id\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-coltable\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-colfields\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/TPCH\",\"tpch\",\"\",\"100\",\"ddl-row-id\")"
-			echo "use test name pattern matching to run the benchmark as follows."
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q01*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",,\"Q02*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q01*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%PARALLEL\",\"Q02*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/TPCH\",\"tpch\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
-	      ;;
-
-	    micro-benchmark)
-			echo "clone the DASH repo from GitHub"
-			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-			read repo
-			repo=${repo:-/nethome/marmorri/DASH}
-			echo "repo : ${repo}"
-			echo "do \$SYSTEM.OBJ.Delete(\"DASH.Utils\")"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/micro\",\"objectscript\",\"\",\"Q*\",\"5\")"
-	      ;;
-
-	    NYTaxi-benchmark)
-			echo "clone the DASH repo from GitHub"
-			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-			read repo
-			repo=${repo:-/nethome/marmorri/DASH}
-			echo "repo : ${repo}"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-row\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-coltable\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/NYTaxi\",\"NYTaxi\",\"\",\"1\",\"ddl-colfields\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q01*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%NOPARALLEL\",\"Q02*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q01*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",,\"Q02*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q01*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/NYTaxi\",\"NYTaxi\",\"%PARALLEL\",\"Q02*\", \"1\")"
-		;;
-
-	    selectivity-benchmark)
-			echo "clone the DASH repo from GitHub"
-			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-			read repo
-			repo=${repo:-/nethome/marmorri/DASH}
-			echo "repo : ${repo}"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-row\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-coltable\")"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"\",\"1\",\"ddl-colfields\")"
-			echo "Queries are of the form below where X,Y,Z are the tags in the query id."
-			echo "select AVG(C.RowNUM) FROM C JOIN D ON C.selX = 0 AND D.selY = 0 AND C.selZ = D.selZ"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%NOPARALLEL\",\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",\"%PARALLEL\",\"Q*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-1-5-10*\", \"1\")"
-			echo "do ##class(DASH.Utils).Run(\"${repo}/SELECTIVITY\",\"SelectivityTest\",,\"Q-20-20-20*\", \"1\")"
-		;;
-
-	    load-benchmark)
-			echo -n "enter directory for local repo copy [default : /nethome/marmorri/DASH]: "
-			read repo
-			repo=${repo:-/nethome/marmorri/DASH}
-			echo "repo : ${repo}"
-			echo "do \$system.OBJ.Load(\"${repo}/DASH/src/cls/Utils.cls\",\"cuk\")"
-			echo "do ##class(DASH.Utils).RunLoads()"
-			echo "do ##class(DASH.Utils).GenerateData()"
-			echo "do ##class(DASH.Utils).Load(\"${repo}/LOAD\",\"load\",\"\",\"1\",\"ddl-row\")"
-		;;
 
 		sharding)
 			echo "zw \$SYSTEM.Cluster.Initialize(\"RB\",\"RB-MASTER\")"
