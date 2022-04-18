@@ -21,7 +21,8 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	set sc = $$$OK
 	set statement = ##class(%SQL.Statement).%New()  // default dialect is IRIS
 	set statement.%SelectMode = 1 // 1=ODBC
-	set InvokedFromNamespace = $znspace
+	new $namespace
+	// set InvokedFromNamespace = $znspace
 	if (org="") { 
 		set ResultGroup = "Load"
 	} else {
@@ -140,7 +141,7 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 	}
 	write:verbose !
 	kill statement
-	set $namespace =  InvokedFromNamespace
+	// set $namespace =  InvokedFromNamespace
 	quit sc
 }
 
@@ -184,7 +185,8 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 
 		set variables("parasetting") = parasetting
 		set variables("org") = org
-		set InvokedFromNamespace = $znspace
+		new $namespace
+		// set InvokedFromNamespace = $znspace
 
 		// write !, "Before use db attempt"
 		do ..RunSQL(path_"src"_separator_"sql"_separator_"queries"_separator_"use-db.sql", "use-db", .variables,1,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
@@ -406,7 +408,7 @@ ClassMethod Run(path As %String = "", database As %String = "", parasetting As %
 	}
 	write:verbose !
 	kill statement
-	set $namespace =  InvokedFromNamespace
+	// set $namespace =  InvokedFromNamespace
 	quit sc
 }
 
@@ -605,7 +607,8 @@ ClassMethod RunObjScr(file As %String, verbose As %Boolean = 1, ByRef elapsed As
 
 ClassMethod Tune() As %Integer [ Language = objectscript ]
 {
-	set InvokedFromNamespace = $znspace
+	new $namespace
+	// set InvokedFromNamespace = $znspace
 
 	set $namespace = "%SYS"
 	//s Obj=##Class(Config.config).Open() // ObjectScript Language Server flags errors.
@@ -620,7 +623,7 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 	s Status=Obj.%Save()
 	set status=$SYSTEM.SQL.Util.SetOption("CachedQuerySaveSource",1,.oldval) // retain source
 
-	set $namespace =  InvokedFromNamespace
+	// set $namespace =  InvokedFromNamespace
 
 	// Restart iris. This is not exactly graceful, but it gets the job done.
 	write !, "Performing restart. A warning message will emit, followed by a delay, and then an OS prompt", !
@@ -635,16 +638,18 @@ ClassMethod Tune() As %Integer [ Language = objectscript ]
 
 ClassMethod DashInit() As %Status
 {
-	// do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/Utils.cls","cuk")
+	set repo = "/nethome/marmorri/DASH/"
+
+	// do $system.OBJ.Load(repo_"/DASH/src/cls/Utils.cls","cuk")
 	// do ##class(DASH.Utils).DashInit()
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/WriteResults.cls","cuk")
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunTPCH.cls","cuk")
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunNYTaxi.cls","cuk")
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunLoads.cls","cuk")
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunSelectivity.cls","cuk")
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunMicro.cls","cuk")
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/RunDASH.cls","cuk")
-	do $system.OBJ.Load("/nethome/marmorri/DASH/DASH/src/cls/DashMenu.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/WriteResults.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/RunTPCH.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/RunNYTaxi.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/RunLoads.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/RunSelectivity.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/RunMicro.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/RunDASH.cls","cuk")
+	do $system.OBJ.Load(repo_"/DASH/src/cls/DashMenu.cls","cuk")
 	set rc = $CLASSMETHOD("DashMenu","DashMenu")
 
 

@@ -305,7 +305,7 @@ do
 	    tpch-query-text)
 			echo "Display TPCH query text : "
 			a=`pwd`
-			cd /nethome/marmorri/benchmark/TPCH/src/sql/queries
+			cd /nethome/marmorri/DASH/TPCH/src/sql/queries
 			select query in quit `ls Q*`
 			do
 				case $query in

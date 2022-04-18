@@ -12,6 +12,9 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 	
 	kill ^%zDashResults
 
+	set repo = "/nethome/marmorri/DASH/"
+
+
 	do ##class(RunLoads).GenerateData() // for the load 1m tests
 	
 	// load base tables
@@ -20,140 +23,140 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 		// Need to redesign the use of globals that keep track of what was loaded because they are overwritten by different suits and also the dummy tables
 
 		// Load TPCH 1G to R tables 
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row",indices)
+		do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-row",indices)
 		
 		// Load TPCH 1G to RID tables - if decide to enable this, need to add another command line option to create R or RID tables, not both
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row-id", indices) // skip
+		// do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-row-id", indices) // skip
 		
 		// Load Selectivity to R tables
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-row",indices)
+		do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-row",indices)
 		
 		// Load NYTaxi to R tables
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-row",indices)
+		// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-row",indices)
 
 		// Load Load1m to R tables
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-row",indices)
+		do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-row",indices)
 
 	} elseif $FIND($zv,"VEC") { // columnar
 		
 		// Load TPCH 1G to CF tables
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",indices)
+		do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-colfields",indices)
 
 		// Load NYTaxi to CT tables
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",indices)
+		// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-coltable",indices)
 
 		// Load Selectivity to CT tables
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-coltable",indices)
+		do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-coltable",indices)
 
 		// Load Load1m to CT tables
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable",indices)
+		do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-coltable",indices)
 		
 	}	// else {
 
 		// if decide to enable CF sources, need to add another command line option to create CF or CT tables, not both
 
 		// Load TPCH 1G to CT tables - if decide to enable this, need to add another command line option to create CF or CT tables, not both
-		//do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",indices) // actually this will move up and CF above will move here
+		//do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-coltable",indices) // actually this will move up and CF above will move here
 
 		// Load NYTaxi to CF tables
 
 		// Load Selectivity to CF tables
 
 		// Load Load1m to CF tables -  
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields",indices)
+		// do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-colfields",indices)
 
 	//}
 
 	// To Do : The following could be done with loops and far less code.
 		
 	// Create R destination tables
-	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row",1,,,"_R_IDX")
-	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-row",0,,,"_R_NOIDX")
-	// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-row",1,,,"_R_IDX")
-	// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-row",0,,,"_R_NOIDX")
-	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-row",1,,,"_R_IDX")
-	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-row",0,,,"_R_NOIDX")
-	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-row",1,,,"_R_IDX")
-	do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-row",0,,,"_R_NOIDX")
+	do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-row",1,,,"_R_IDX")
+	do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-row",0,,,"_R_NOIDX")
+	// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-row",1,,,"_R_IDX")
+	// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-row",0,,,"_R_NOIDX")
+	do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-row",1,,,"_R_IDX")
+	do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-row",0,,,"_R_NOIDX")
+	do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-row",1,,,"_R_IDX")
+	do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-row",0,,,"_R_NOIDX")
 
 	if $FIND($zv,"VEC") {
 
 		// Create CF destination tables
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",1,,,"_CF_IDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-colfields",0,,,"_CF_NOIDX")
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-colfields",1,,,"_CF_IDX")
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-colfields",0,,,"_CF_NOIDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-colfields",1,,,"_CF_IDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-colfields",0,,,"_CF_NOIDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields",1,,,"_CF_IDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-colfields",0,,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-colfields",1,,,"_CF_IDX")
+		do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-colfields",0,,,"_CF_NOIDX")
+		// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-colfields",1,,,"_CF_IDX")
+		// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-colfields",0,,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-colfields",1,,,"_CF_IDX")
+		do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-colfields",0,,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-colfields",1,,,"_CF_IDX")
+		do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-colfields",0,,,"_CF_NOIDX")
 
 		// Create CT destination tables
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",1,,,"_CT_IDX")
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/TPCH","tpch","","1","ddl-coltable",0,,,"_CT_NOIDX")
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",1,,,"_CT_IDX")
-		// do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/NYTaxi","NYTaxi","","1","ddl-coltable",0,,,"_CT_NOIDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-coltable",1,,,"_CT_IDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","","1","ddl-coltable",0,,,"_CT_NOIDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable",1,,,"_CT_IDX")
-		do ##class(DASH.Utils).Load("/nethome/marmorri/DASH/LOAD","load1m","","1","ddl-coltable",0,,,"_CT_NOIDX")
+		// do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-coltable",1,,,"_CT_IDX")
+		// do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-coltable",0,,,"_CT_NOIDX")
+		// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-coltable",1,,,"_CT_IDX")
+		// do ##class(DASH.Utils).Load(repo_"/NYTaxi","NYTaxi","","1","ddl-coltable",0,,,"_CT_NOIDX")
+		do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-coltable",1,,,"_CT_IDX")
+		do ##class(DASH.Utils).Load(repo_"/SELECTIVITY","Selectivity","","1","ddl-coltable",0,,,"_CT_NOIDX")
+		do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-coltable",1,,,"_CT_IDX")
+		do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-coltable",0,,,"_CT_NOIDX")
 
 	}
 
 	// insert selects to R
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_R_IDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_R_IDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_R_NOIDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
-	#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_R_IDX")
-	#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_R_IDX")
-	#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_R_NOIDX")
-	#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_R_IDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_R_IDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_R_NOIDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%PARALLEL","IS*", iterations,,"_R_IDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_R_IDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%PARALLEL","IS*", iterations,,"_R_NOIDX")
-	do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
+	do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","IS*", iterations,,"_R_IDX")
+	do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_R_IDX")
+	do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","IS*", iterations,,"_R_NOIDX")
+	do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
+	#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_R_IDX")
+	#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_R_IDX")
+	#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_R_NOIDX")
+	#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
+	do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_R_IDX")
+	do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_R_IDX")
+	do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_R_NOIDX")
+	do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
+	do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%PARALLEL","IS*", iterations,,"_R_IDX")
+	do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_R_IDX")
+	do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%PARALLEL","IS*", iterations,,"_R_NOIDX")
+	do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
 	
 	if $FIND($zv,"VEC") {
 		// insert selects to CF
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CF_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CF_IDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CF_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CF_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CF_IDX")
+		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
+		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CF_IDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CF_IDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CF_IDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CF_IDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CF_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CF_NOIDX")
 
 		// insert selects to CT
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CT_IDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CT_IDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
-		#; do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CT_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CT_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
-		do ##class(DASH.Utils).Run("/nethome/marmorri/DASH/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
+		#; do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CT_IDX")
+		#; do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
+		#; do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
+		#; do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CT_IDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
+		#; do ##class(DASH.Utils).Run(repo_"/NYTaxi","NYTaxi","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CT_IDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/SELECTIVITY","Selectivity","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CT_IDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CT_IDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%PARALLEL","IS*", iterations,,"_CT_NOIDX")
+		do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_CT_NOIDX")
 	}
 
 	do ##class(WriteResults).WriteResults()
