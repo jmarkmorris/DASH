@@ -17,7 +17,7 @@ fig01.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf02 = df[(df.querynum == "Q02") & (df.para == "autoparallel")]
@@ -27,7 +27,7 @@ fig02.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf03 = df[(df.querynum == "Q03") & (df.para == "autoparallel")]
@@ -37,7 +37,7 @@ fig03.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf04 = df[(df.querynum == "Q04") & (df.para == "autoparallel")]
@@ -47,7 +47,7 @@ fig04.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf05 = df[(df.querynum == "Q05") & (df.para == "autoparallel")]
@@ -57,7 +57,7 @@ fig05.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf06 = df[(df.querynum == "Q06") & (df.para == "autoparallel")]
@@ -67,7 +67,7 @@ fig06.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf07 = df[(df.querynum == "Q07") & (df.para == "autoparallel")]
@@ -77,7 +77,7 @@ fig07.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf08 = df[(df.querynum == "Q08") & (df.para == "autoparallel")]
@@ -87,7 +87,7 @@ fig08.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf09 = df[(df.querynum == "Q09") & (df.para == "autoparallel")]
@@ -97,7 +97,7 @@ fig09.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf10 = df[(df.querynum == "Q10") & (df.para == "autoparallel")]
@@ -107,7 +107,7 @@ fig10.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf11 = df[(df.querynum == "Q11") & (df.para == "autoparallel")]
@@ -117,7 +117,7 @@ fig11.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf12 = df[(df.querynum == "Q12") & (df.para == "autoparallel")]
@@ -127,7 +127,7 @@ fig12.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf13 = df[(df.querynum == "Q13") & (df.para == "autoparallel")]
@@ -137,7 +137,7 @@ fig13.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf14 = df[(df.querynum == "Q14") & (df.para == "autoparallel")]
@@ -147,7 +147,7 @@ fig14.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf15 = df[(df.querynum == "Q15") & (df.para == "autoparallel")]
@@ -157,7 +157,7 @@ fig15.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf16 = df[(df.querynum == "Q16") & (df.para == "autoparallel")]
@@ -167,7 +167,7 @@ fig16.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf17 = df[(df.querynum == "Q17") & (df.para == "autoparallel")]
@@ -177,7 +177,7 @@ fig17.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf19 = df[(df.querynum == "Q19") & (df.para == "autoparallel")]
@@ -187,7 +187,7 @@ fig19.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf20 = df[(df.querynum == "Q20") & (df.para == "autoparallel")]
@@ -197,7 +197,7 @@ fig20.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf22 = df[(df.querynum == "Q22") & (df.para == "autoparallel")]
@@ -207,7 +207,7 @@ fig22.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB1 = df[(df.querynum == "QLB1") & (df.para == "autoparallel")]
@@ -217,7 +217,7 @@ figLB1.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB2 = df[(df.querynum == "QLB2") & (df.para == "autoparallel")]
@@ -227,7 +227,7 @@ figLB2.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB3 = df[(df.querynum == "QLB3") & (df.para == "autoparallel")]
@@ -237,7 +237,7 @@ figLB3.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB4 = df[(df.querynum == "QLB4") & (df.para == "autoparallel")]
@@ -247,7 +247,7 @@ figLB4.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB5 = df[(df.querynum == "QLB5") & (df.para == "autoparallel")]
@@ -257,7 +257,7 @@ figLB5.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB6 = df[(df.querynum == "QLB6") & (df.para == "autoparallel")]
@@ -267,7 +267,7 @@ figLB6.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB7 = df[(df.querynum == "QLB7") & (df.para == "autoparallel")]
@@ -277,7 +277,7 @@ figLB7.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB8 = df[(df.querynum == "QLB8") & (df.para == "autoparallel")]
@@ -287,7 +287,7 @@ figLB8.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdfLB9 = df[(df.querynum == "QLB9") & (df.para == "autoparallel")]
@@ -297,7 +297,7 @@ figLB9.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf06b = df[(df.querynum == "Q06b") & (df.para == "autoparallel")]
@@ -307,7 +307,7 @@ fig06b.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 fdf06c = df[(df.querynum == "Q06c") & (df.para == "autoparallel")]
@@ -317,7 +317,7 @@ fig06c.update_layout(
 plot_bgcolor=colors['background'],
 paper_bgcolor=colors['background'],
 font_color=colors['text'],
-legend=dict( yanchor="top", y=0.80, xanchor="left", x=0.01)
+legend=dict( yanchor="top", y=1.1, xanchor="auto", orientation="h")
 )
 
 app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
