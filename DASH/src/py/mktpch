@@ -19,7 +19,7 @@ echo "df = df.sort_values(by=['date'])"
 for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 19 20 22 LB1 LB2 LB3 LB4 LB5 LB6 LB7 LB8 LB9 06b 06c # skip 18 and 21 for tpch until columnar joins available
 do
 echo "fdf${i} = df[(df.querynum == \"Q${i}\") & (df.idx == \"INDICES\") & (df.para == \"autoparallel\")]"
-echo "fig${i} = px.scatter(fdf${i}, x=\"date\", y=\"runtime\", color=\"org\", symbol=\"para\", title=\"Q${i}\")"
+echo "fig${i} = px.scatter(fdf${i}, x=\"date\", y=\"runtime\", color=\"org\", symbol=\"para\", render_mode='chrome', title=\"Q${i}\")"
 echo "fig${i}.update_yaxes(range=[0, max(fdf${i}.runtime)*1.1])"
 echo "fig${i}.update_layout("
     echo "plot_bgcolor=colors['background'],"
@@ -30,7 +30,14 @@ echo ")"
 echo
 done
 
-echo "app.layout = html.Div(style={'backgroundColor': colors['background']}, children=["
+echo "layout = html.Div(style={'backgroundColor': colors['background']}, children=["
+
+for i in mk*
+do
+        j=`echo $i | sed -e "s/^mk//"`
+        echo "dcc.Link('[Go to "${j}"] ', href='/"${j}"',style={'font-family': 'Times New Roman, Times, serif', 'color': 'white', 'font-weight': 'bold'}),"
+done
+
     echo "html.H1("
         echo "children='TPCH Dashboard',"
         echo "style={"

@@ -90,7 +90,6 @@ ClassMethod Load(path As %String = "", database As %String = "", schema As %Stri
 		if (org="") { 
 			set StepStart = StepEnd
 			set variables("data_dir") = path_"data"_separator_scale_separator
-			// TODO change this to pick up load-tables.sql in the scale directory
 			set sc = ..RunSQL(path_"src"_separator_"sql"_separator_ddl_separator_"load-tables.sql","load-tables", .variables,,, .statement, /* DoPrepare As %Boolean : */ 1, /* DoExplain As %Boolean : */ 0)
 			quit:$$$ISERR(sc)
 			set StepEnd = $zh

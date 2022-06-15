@@ -1,0 +1,42 @@
+dest="app.py"
+echo "from dash import Dash, dcc, html, Input, Output, callback" > ${dest}
+s=""
+d=" "
+for i in mk*
+do
+	j=`echo $i | sed -e "s/^mk//"`
+	s=${s}${d}${j}
+	d=", "
+done
+echo "from pages import"${s} >> ${dest}
+
+echo "app = Dash(__name__, suppress_callback_exceptions=True)" >> ${dest}
+echo "server = app.server" >> ${dest}
+echo "app.layout = html.Div([" >> ${dest}
+    echo "dcc.Location(id='url', refresh=False)," >> ${dest}
+    echo "html.Div(id='page-content')" >> ${dest}
+echo "])" >> ${dest}
+echo "@callback(Output('page-content', 'children')," >> ${dest}
+              echo "Input('url', 'pathname'))" >> ${dest}
+echo "def display_page(pathname):" >> ${dest}
+
+
+
+d="if "
+for i in mk*
+do
+	#echo $i
+	j=`echo $i | sed -e "s/^mk//"`
+	./${i} > ./pages/${j}.py
+	echo "    "${d}"pathname == '/"${j}"':" >> ${dest}
+	d="elif "
+	echo "        return "${j}".layout" >> ${dest}
+done
+
+
+
+echo "    else:" >> ${dest}
+echo "        return '404'" >> ${dest}
+
+echo "if __name__ == '__main__':" >> ${dest}
+echo "    app.run_server(debug=True)" >> ${dest}
