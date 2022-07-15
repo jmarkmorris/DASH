@@ -16,7 +16,7 @@ ClassMethod RunTPCH(iterations As %String = "5", verbose As %Boolean = 1) As %St
 	
 	//do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-row-id")
 	
-	if $FIND($zv,"VEC") {
+	if $zbitget($zversion(0),52) {
 		do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-colfields",1)  // with indices
 		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","Q*", iterations)
 		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","Q*", iterations)

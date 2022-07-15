@@ -5,10 +5,11 @@ Class RunLoads extends DASH.Utils
 ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indices As %Boolean = 0, columnar As %Boolean = 1) As %Status
 {
 	if columnar {
-		if '$FIND($zv,"VEC") { // columnar
+		if '$zbitget($zversion(0),52) { // columnar
 			quit
 		}
 	}
+	// todo here and other Run*.cls add additional check for columnar license support : $system.License.GetFeature(25) returns 1
 	
 	kill ^%zDashResults
 
@@ -37,7 +38,7 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 		// Load Load1m to R tables
 		do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-row",indices)
 
-	} elseif $FIND($zv,"VEC") { // columnar
+	} elseif $zbitget($zversion(0),52) { // columnar
 		
 		// Load TPCH 1G to CF tables
 		do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-colfields",indices)
@@ -79,7 +80,7 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 	do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-row",1,,,"_R_IDX")
 	do ##class(DASH.Utils).Load(repo_"/LOAD","load1m","","1","ddl-row",0,,,"_R_NOIDX")
 
-	if $FIND($zv,"VEC") {
+	if $zbitget($zversion(0),52) {
 
 		// Create CF destination tables
 		do ##class(DASH.Utils).Load(repo_"/TPCH","tpch","","1","ddl-colfields",1,,,"_CF_IDX")
@@ -121,7 +122,7 @@ ClassMethod RunLoads(iterations As %String = "5", verbose As %Boolean = 1, indic
 	do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%PARALLEL","IS*", iterations,,"_R_NOIDX")
 	do ##class(DASH.Utils).Run(repo_"/LOAD","load1m","%NOPARALLEL","IS*", iterations,,"_R_NOIDX")
 	
-	if $FIND($zv,"VEC") {
+	if $zbitget($zversion(0),52) {
 		// insert selects to CF
 		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%PARALLEL","IS*", iterations,,"_CF_IDX")
 		do ##class(DASH.Utils).Run(repo_"/TPCH","tpch","%NOPARALLEL","IS*", iterations,,"_CF_IDX")

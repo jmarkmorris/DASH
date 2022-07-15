@@ -21,7 +21,7 @@ ClassMethod RunNYTaxi1B(iterations As %String = "5", verbose As %Boolean = 1) As
 	do ##class(DASH.Utils).Run(repo_"/NYTaxi1B","NYTaxi1B","%PARALLEL","Q*", iterations,verbose)
 	do ##class(DASH.Utils).Run(repo_"/NYTaxi1B","NYTaxi1B","","Q*", iterations,verbose)
 
-	if $FIND($zv,"VEC") {
+	if $zbitget($zversion(0),52) {
 		// with indices
         do ##class(DASH.Utils).Load(repo_"/NYTaxi1B","NYTaxi1B","","1","ddl-coltable",1)
 		do ##class(DASH.Utils).Run(repo_"/NYTaxi1B","NYTaxi1B","%NOPARALLEL","Q*", iterations,verbose)
